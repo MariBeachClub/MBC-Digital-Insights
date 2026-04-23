@@ -5,7 +5,7 @@ import { Search, MousePointerClick, Eye, Target, Sparkles, TrendingUp, ArrowUpRi
 export function GscPlatformOverview() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pt-6 border-t border-[#EAE3D9]">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#3E1510] flex items-center">
             Google Search Console
@@ -14,18 +14,18 @@ export function GscPlatformOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_1fr] gap-6">
         
-        {/* Left Column: Organic Queries & Overview */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Left Column: 65% Width */}
+        <div className="space-y-6">
           {/* Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
                 <MousePointerClick className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Total Clicks</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{(gscKpis.clicks / 1000).toFixed(1)}<span className="text-sm text-[#A88C87]">k</span></p>
+              <p className="text-xl font-bold text-[#14421E]">{(gscKpis.clicks / 1000).toFixed(1)}<span className="text-sm text-[#2E6B3B]">k</span></p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
@@ -34,12 +34,12 @@ export function GscPlatformOverview() {
               </div>
               <p className="text-xl font-bold text-[#3E1510]">{(gscKpis.impressions / 1000).toFixed(1)}<span className="text-sm text-[#A88C87]">k</span></p>
             </div>
-            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
+            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg. CTR</span>
               </div>
-              <p className="text-xl font-bold text-[#14421E]">{gscKpis.avgCtr}%</p>
+              <p className="text-xl font-bold text-[#3E1510]">{gscKpis.avgCtr}%</p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
@@ -59,16 +59,16 @@ export function GscPlatformOverview() {
               <table className="w-full text-sm text-left">
                 <thead className="text-[10px] uppercase tracking-wider text-[#A88C87] bg-white border-b border-[#EAE3D9]">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Query</th>
-                    <th className="px-6 py-4 font-bold text-right">Clicks</th>
-                    <th className="px-6 py-4 font-bold text-right">Impressions</th>
-                    <th className="px-6 py-4 font-bold text-right">CTR</th>
-                    <th className="px-6 py-4 font-bold text-right">Position</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Query</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Clicks</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Impressions</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">CTR</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Position</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
                   {gscQueries.map((item) => (
-                    <tr key={item.id} className="hover:bg-[#F9F7F4] transition-colors">
+                    <tr key={item.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <span className="font-medium text-[#5C4541] truncate max-w-[200px] block" title={item.query}>
                           {item.query}
@@ -91,10 +91,10 @@ export function GscPlatformOverview() {
           </div>
         </div>
 
-        {/* Right Column: AI Insights & Opportunities */}
+        {/* Right Column: 35% Width */}
         <div className="space-y-6">
           
-          {/* AI Insight Dedicated Box */}
+          {/* AI Insight Dedicated Box (Standardized) */}
           <div className="bg-[#FDF8F3] border border-[#DDA77B]/40 rounded-2xl p-6 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-10">
                <Search className="w-24 h-24 text-[#DDA77B]" />

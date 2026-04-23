@@ -5,7 +5,7 @@ import { Megaphone, MousePointerClick, Target, TrendingUp, Sparkles, Search, Eye
 export function GadsPlatformOverview() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pt-6 border-t border-[#EAE3D9]">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#3E1510] flex items-center">
             Google Ads Ecosystem
@@ -14,12 +14,19 @@ export function GadsPlatformOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_1fr] gap-6">
         
-        {/* Left Column: Campaigns Overview */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Left Column: 65% Width */}
+        <div className="space-y-6">
           {/* Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
+                <Target className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Conversions</span>
+              </div>
+              <p className="text-xl font-bold text-[#14421E]">{gadsKpis.conversions}</p>
+            </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Megaphone className="w-4 h-4" />
@@ -29,24 +36,17 @@ export function GadsPlatformOverview() {
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Target className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Conversions</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{gadsKpis.conversions}</p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <MousePointerClick className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Clicks</span>
               </div>
               <p className="text-xl font-bold text-[#3E1510]">{(gadsKpis.clicks / 1000).toFixed(1)}<span className="text-sm text-[#A88C87]">k</span></p>
             </div>
-            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
+            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg CPC</span>
               </div>
-              <p className="text-xl font-bold text-[#14421E]">IDR {gadsKpis.avgCpc}</p>
+              <p className="text-xl font-bold text-[#3E1510]">IDR {gadsKpis.avgCpc}</p>
             </div>
           </div>
 
@@ -59,17 +59,17 @@ export function GadsPlatformOverview() {
               <table className="w-full text-sm text-left">
                 <thead className="text-[10px] uppercase tracking-wider text-[#A88C87] bg-white border-b border-[#EAE3D9]">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Campaign</th>
-                    <th className="px-6 py-4 font-bold">Type</th>
-                    <th className="px-6 py-4 font-bold text-right">Spend</th>
-                    <th className="px-6 py-4 font-bold text-right">Conv.</th>
-                    <th className="px-6 py-4 font-bold text-right">CPA</th>
-                    <th className="px-6 py-4 font-bold text-right">ROAS</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Campaign</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Type</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Spend</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Conv.</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">CPA</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">ROAS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
                   {gadsCampaigns.map((camp) => (
-                    <tr key={camp.id} className="hover:bg-[#F9F7F4] transition-colors">
+                    <tr key={camp.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className={`w-1.5 h-1.5 rounded-full mr-2 ${camp.status === 'Active' ? 'bg-[#DDA77B]' : 'bg-slate-300'}`}></div>
@@ -89,10 +89,10 @@ export function GadsPlatformOverview() {
           </div>
         </div>
 
-        {/* Right Column: Search Context & Insights */}
+        {/* Right Column: 35% Width */}
         <div className="space-y-6">
           
-          {/* AI Insight Dedicated Box */}
+          {/* AI Insight Dedicated Box (Standardized) */}
           <div className="bg-[#FDF8F3] border border-[#DDA77B]/40 rounded-2xl p-6 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-10">
                <Megaphone className="w-24 h-24 text-[#DDA77B]" />

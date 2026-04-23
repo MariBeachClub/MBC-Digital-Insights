@@ -14,12 +14,12 @@ export function MetaPlatformOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         {/* Left Column: Ads Performance */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6">
           {/* Ads Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Facebook className="w-4 h-4" />

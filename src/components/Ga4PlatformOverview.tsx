@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, L
 export function Ga4PlatformOverview() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pt-6 border-t border-[#EAE3D9]">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#3E1510] flex items-center">
             Website Performance (GA4)
@@ -15,18 +15,18 @@ export function Ga4PlatformOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_1fr] gap-6">
         
-        {/* Left Column: Traffic & Top Pages */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* GA4 Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
+        {/* Left Column: 65% Width */}
+        <div className="space-y-6">
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
                 <Globe className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Sessions</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.sessions.toLocaleString()}</p>
+              <p className="text-xl font-bold text-[#14421E]">{ga4Kpis.sessions.toLocaleString()}</p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
@@ -42,12 +42,12 @@ export function Ga4PlatformOverview() {
               </div>
               <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.bounceRate}%</p>
             </div>
-            <div className="bg-[#FDF8F3] border border-[#F5E1C8] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A46A38] mb-2">
+            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Clock className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg Session</span>
               </div>
-              <p className="text-xl font-bold text-[#5D221A]">{ga4Kpis.avgSessionDuration}</p>
+              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.avgSessionDuration}</p>
             </div>
           </div>
 
@@ -60,15 +60,15 @@ export function Ga4PlatformOverview() {
               <table className="w-full text-sm text-left">
                 <thead className="text-[10px] uppercase tracking-wider text-[#A88C87] bg-white border-b border-[#EAE3D9]">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Page Path</th>
-                    <th className="px-6 py-4 font-bold text-right">Pageviews</th>
-                    <th className="px-6 py-4 font-bold text-right">Avg. Time on Page</th>
-                    <th className="px-6 py-4 font-bold text-center">Trend</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Page Path</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Pageviews</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Avg. Time on Page</th>
+                    <th className="px-6 py-4 font-bold text-center cursor-pointer hover:bg-slate-50">Trend</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
                   {ga4TopPages.map((page) => (
-                    <tr key={page.id} className="hover:bg-[#F9F7F4] transition-colors">
+                    <tr key={page.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-[#5C4541]">{page.name}</p>
                         <p className="text-[11px] text-[#A88C87] font-mono mt-0.5">{page.path}</p>
@@ -88,39 +88,39 @@ export function Ga4PlatformOverview() {
           </div>
         </div>
 
-        {/* Right Column: Acquisition & Insights */}
+        {/* Right Column: 35% Width */}
         <div className="space-y-6">
           
-          {/* AI Insight Dedicated Box */}
-          <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-2xl p-6 shadow-sm relative overflow-hidden">
+          {/* AI Insight Dedicated Box (Standardized) */}
+          <div className="bg-[#FDF8F3] border border-[#DDA77B]/40 rounded-2xl p-6 shadow-sm relative overflow-hidden">
              {/* Decorative element */}
              <div className="absolute top-0 right-0 p-4 opacity-10">
-               <Globe className="w-24 h-24 text-[#2E6B3B]" />
+               <Globe className="w-24 h-24 text-[#DDA77B]" />
              </div>
              
              <div className="relative z-10">
                 <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-8 h-8 rounded-full bg-[#D5E6D9] flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-[#2E6B3B]" />
+                  <div className="w-8 h-8 rounded-full bg-[#DDA77B]/20 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-[#A43927]" />
                   </div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#14421E]">AI Analysis</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#7A2B20]">AI Analysis</span>
                 </div>
                 
-                <h4 className="font-serif font-bold text-lg text-[#14421E] mb-2 leading-tight">
+                <h4 className="font-serif font-bold text-lg text-[#3E1510] mb-2 leading-tight">
                   VIP Daybed intent is exceptionally high
                 </h4>
-                <p className="text-[#2E6B3B] text-sm leading-relaxed mb-4">
-                  Visitors spending time on the <span className="font-semibold">/vip-daybeds</span> page are averaging <span className="font-bold underline">03:15</span> per session. This is 140% higher than the site average, showing strong read-through rates.
+                <p className="text-[#5C4541] text-sm leading-relaxed mb-4">
+                  Visitors spending time on the <span className="font-semibold px-1 bg-white rounded border border-[#EAE3D9]">/vip-daybeds</span> page are averaging 03:15 per session. This is 140% higher than the site average, indicating strong read-through rates.
                 </p>
-                <div className="mt-4 pt-4 border-t border-[#D5E6D9]">
-                  <p className="text-[#14421E] text-xs font-bold">
+                <div className="mt-4 pt-4 border-t border-[#DDA77B]/20">
+                  <p className="text-[#A43927] text-xs font-bold flex items-center">
                     Recommendation: Add an immediate "Chat with Concierge" auto-popup on this specific URL to capture high-intent leads faster.
                   </p>
                 </div>
              </div>
           </div>
 
-          {/* Traffic Sources Chart */}
+          {/* Traffic Sources Chart (Secondary Insight) */}
           <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm flex flex-col h-[320px]">
             <div className="flex items-center space-x-2 mb-4">
               <PieChartIcon className="w-5 h-5 text-[#3E1510]" />

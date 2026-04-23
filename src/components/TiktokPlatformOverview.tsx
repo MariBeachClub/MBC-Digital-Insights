@@ -5,7 +5,7 @@ import { Video, Heart, Share2, TrendingUp, Sparkles, UserPlus, PlayCircle, Flame
 export function TiktokPlatformOverview() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pt-6 border-t border-[#EAE3D9]">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-serif font-bold text-[#3E1510] flex items-center">
             TikTok Performance
@@ -14,25 +14,25 @@ export function TiktokPlatformOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_1fr] gap-6">
         
-        {/* Left Column: Organic Video Performance */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Left Column: 65% Width */}
+        <div className="space-y-6">
           {/* Summary KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
                 <PlayCircle className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Total Views</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{(tiktokKpis.videoViews / 1000000).toFixed(2)}<span className="text-sm text-[#A88C87]">M</span></p>
+              <p className="text-xl font-bold text-[#14421E]">{(tiktokKpis.videoViews / 1000000).toFixed(2)}<span className="text-sm text-[#2E6B3B]">M</span></p>
             </div>
-            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
+            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
+              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Engagement</span>
               </div>
-              <p className="text-xl font-bold text-[#14421E]">{tiktokKpis.engagementRate}%</p>
+              <p className="text-xl font-bold text-[#3E1510]">{tiktokKpis.engagementRate}%</p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
@@ -59,15 +59,15 @@ export function TiktokPlatformOverview() {
               <table className="w-full text-sm text-left">
                 <thead className="text-[10px] uppercase tracking-wider text-[#A88C87] bg-white border-b border-[#EAE3D9]">
                   <tr>
-                    <th className="px-6 py-4 font-bold">Video Title</th>
-                    <th className="px-6 py-4 font-bold text-right">Views</th>
-                    <th className="px-6 py-4 font-bold text-right">Likes</th>
-                    <th className="px-6 py-4 font-bold text-right">Shares</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Video Title</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Views</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Likes</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Shares</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
                   {tiktokTopVideos.map((video) => (
-                    <tr key={video.id} className="hover:bg-[#F9F7F4] transition-colors">
+                    <tr key={video.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           {video.trend === 'viral' && <Flame className="w-4 h-4 text-[#A43927] mr-2" />}
@@ -88,10 +88,10 @@ export function TiktokPlatformOverview() {
           </div>
         </div>
 
-        {/* Right Column: Ads & Insights */}
+        {/* Right Column: 35% Width */}
         <div className="space-y-6">
           
-          {/* AI Insight Dedicated Box */}
+          {/* AI Insight Dedicated Box (Standardized) */}
           <div className="bg-[#FDF8F3] border border-[#DDA77B]/40 rounded-2xl p-6 shadow-sm relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-10">
                <Video className="w-24 h-24 text-[#DDA77B]" />

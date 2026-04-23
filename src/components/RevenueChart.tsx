@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function RevenueChart() {
   return (
     <div className="bg-white border border-[#EAE3D9] rounded-2xl shadow-sm p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-start justify-between mb-8">
         <div>
           <h3 className="text-xl font-serif font-bold text-[#3E1510] flex items-center">
             Digital Bookings & Content Reach
@@ -56,15 +56,15 @@ export function RevenueChart() {
           </h3>
           <p className="text-sm text-[#A88C87] font-medium mt-1">Correlation between content interactions and table bookings</p>
         </div>
-        <div className="flex items-center space-x-6 text-sm font-semibold uppercase tracking-wider text-[11px]">
-            <div className="flex items-center text-[#5C4541]"><div className="w-2.5 h-2.5 rounded-full bg-[#7A2B20] mr-2"></div> Revenue (IDR)</div>
-            <div className="flex items-center text-[#5C4541]"><div className="w-2.5 h-2.5 rounded-full bg-[#DDA77B] mr-2"></div> Content Reach</div>
+        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-md bg-[#FDF8F3] border border-[#F5E1C8] text-[11px] font-bold text-[#A46A38] uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#DDA77B]" />
+          Hover peak for AI Analysis
         </div>
       </div>
       
       <div className="h-[340px] w-full cursor-crosshair">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={northStarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={northStarData} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#7A2B20" stopOpacity={0.15}/>
@@ -77,14 +77,22 @@ export function RevenueChart() {
             </defs>
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#EAE3D9" />
             <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A88C87', fontWeight: 500 }} dy={10} />
-            <YAxis yAxisId="left" tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A88C87', fontWeight: 500 }} dx={-10} />
-            <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A88C87', fontWeight: 500 }} hide />
+            <YAxis width={60} yAxisId="left" tickFormatter={(value) => `${value / 1000000}M`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A88C87', fontWeight: 500 }} dx={-10} />
+            <YAxis width={40} yAxisId="right" orientation="right" tickFormatter={(value) => `${value / 1000}k`} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#A88C87', fontWeight: 500 }} dx={10} />
             <Tooltip content={<CustomTooltip />} />
             
+            {/* Proper recharts legend */}
+            <Legend 
+              verticalAlign="bottom" 
+              height={36} 
+              iconType="circle"
+              wrapperStyle={{ paddingTop: '20px', fontSize: '12px', fontWeight: 600, color: '#5C4541' }}
+            />
+            
             {/* The maroon MBC color line */}
-            <Area yAxisId="left" type="monotone" dataKey="revenue" stroke="#7A2B20" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{ r: 6, strokeWidth: 0, fill: '#7A2B20' }} />
+            <Area name="Revenue (IDR)" yAxisId="left" type="monotone" dataKey="revenue" stroke="#7A2B20" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" activeDot={{ r: 6, strokeWidth: 0, fill: '#7A2B20' }} />
             {/* The sandy/beige accent line */}
-            <Area yAxisId="right" type="monotone" dataKey="reach" stroke="#DDA77B" strokeWidth={3} strokeDasharray="0" fillOpacity={1} fill="url(#colorReach)" activeDot={{ r: 5, strokeWidth: 0, fill: '#DDA77B' }} />
+            <Area name="Content Reach" yAxisId="right" type="monotone" dataKey="reach" stroke="#DDA77B" strokeWidth={3} strokeDasharray="0" fillOpacity={1} fill="url(#colorReach)" activeDot={{ r: 5, strokeWidth: 0, fill: '#DDA77B' }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

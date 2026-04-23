@@ -9,10 +9,12 @@ import { TiktokPlatformOverview } from './components/TiktokPlatformOverview';
 import { GadsPlatformOverview } from './components/GadsPlatformOverview';
 import { GscPlatformOverview } from './components/GscPlatformOverview';
 import { YoutubePlatformOverview } from './components/YoutubePlatformOverview';
-import { LayoutDashboard, Share2, Globe, FileText, Video, Search, PlaySquare, Megaphone } from 'lucide-react';
+import { ConnectorsSetup } from './components/ConnectorsSetup';
+import { LayoutDashboard, Share2, Globe, FileText, Video, Search, PlaySquare, Megaphone, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft'>('executive');
+  const [activeTab, setActiveTab] = useState<'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors'>('connectors');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Simple placeholder for platforms not fully built out yet
   const PlaceholderView = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
@@ -25,139 +27,185 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-[#F9F7F4] font-sans text-[#3E1510]">
-      <Sidebar setActiveTab={setActiveTab} />
+      <Sidebar 
+        setActiveTab={setActiveTab} 
+        isMobileOpen={isMobileSidebarOpen} 
+        onCloseMobile={() => setIsMobileSidebarOpen(false)} 
+      />
       
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Header />
+        <Header onMenuClick={() => setIsMobileSidebarOpen(true)} />
         
         {/* Tab Navigation Menu */}
-        <div className="bg-white border-b border-[#EAE3D9] px-8 pt-4 overflow-x-auto custom-scrollbar">
-          <div className="max-w-7xl mx-auto flex space-x-8 min-w-max">
-            <button 
-              onClick={() => setActiveTab('executive')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'executive' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
+        <div className="bg-white border-b border-[#EAE3D9]">
+          {/* Mobile Select Dropdown */}
+          <div className="md:hidden p-4">
+            <select 
+              value={activeTab}
+              onChange={(e) => setActiveTab(e.target.value as any)}
+              className="w-full bg-[#FDF8F3] border border-[#EAE3D9] text-[#3E1510] font-bold rounded-lg px-4 py-3 appearance-none focus:outline-none focus:ring-2 focus:ring-[#DDA77B]/50 shadow-sm"
             >
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Executive Overview</span>
-            </button>
+              <option value="executive">Executive Overview</option>
+              <option value="meta">Meta Ecosystem</option>
+              <option value="ga4">Website (GA4)</option>
+              <option value="tiktok">TikTok</option>
+              <option value="gads">Google Ads</option>
+              <option value="gsc">Search Console</option>
+              <option value="youtube">YouTube</option>
+              <option value="draft">Review Draft (Month-End)</option>
+            </select>
+            {/* Custom dropdown arrow for mobile select */}
+            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center px-4 pt-4">
+               <svg className="fill-current h-4 w-4 text-[#3E1510]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+          </div>
+
+          {/* Desktop Horizontal Tabs */}
+          <div className="hidden md:flex items-center px-8 pt-4 border-b border-[#EAE3D9] bg-white group/tabs">
+            {/* Left Scroll Button */}
             <button 
-              onClick={() => setActiveTab('meta')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'meta' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
+              onClick={() => {
+                const container = document.getElementById('tab-scroll-container');
+                if (container) container.scrollBy({ left: -200, behavior: 'smooth' });
+              }}
+              className="mr-2 p-1.5 rounded-full text-[#A88C87] hover:text-[#3E1510] hover:bg-[#F9F7F4] transition-colors"
             >
-              <Share2 className="w-4 h-4" />
-              <span>Meta Ecosystem</span>
+              <ChevronLeft className="w-5 h-5" />
             </button>
+
+            {/* Scrollable Tabs */}
+            <div 
+              id="tab-scroll-container"
+              className="flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
+              style={{ paddingBottom: '16px', marginBottom: '-16px' }} // Fix to hide scrollbar but align borders
+            >
+              <div className="flex space-x-6 min-w-max pb-4">
+                <button 
+                  onClick={() => setActiveTab('executive')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'executive' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Overview</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('meta')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'meta' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>Meta</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('ga4')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'ga4' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <Globe className="w-4 h-4" />
+                  <span>Website</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('tiktok')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'tiktok' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <Video className="w-4 h-4" />
+                  <span>TikTok</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('gads')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'gads' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <Megaphone className="w-4 h-4" />
+                  <span>Google Ads</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('gsc')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'gsc' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Search</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('youtube')}
+                  className={`flex items-center space-x-2 pb-[-16px] border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'youtube' ? 'border-[#7A2B20] text-[#3E1510] font-bold' : 'border-transparent text-[#A88C87] hover:text-[#5C4541] font-medium'}`}
+                  style={{ marginBottom: '-16px', paddingBottom: '16px' }}
+                >
+                  <PlaySquare className="w-4 h-4" />
+                  <span>YouTube</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Scroll Button */}
             <button 
-              onClick={() => setActiveTab('ga4')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'ga4' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
+              onClick={() => {
+                const container = document.getElementById('tab-scroll-container');
+                if (container) container.scrollBy({ left: 200, behavior: 'smooth' });
+              }}
+              className="ml-2 p-1.5 rounded-full text-[#A88C87] hover:text-[#3E1510] hover:bg-[#F9F7F4] transition-colors"
             >
-              <Globe className="w-4 h-4" />
-              <span>Website (GA4)</span>
+              <ChevronRight className="w-5 h-5" />
             </button>
-            <button 
-              onClick={() => setActiveTab('tiktok')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'tiktok' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
-            >
-              <Video className="w-4 h-4" />
-              <span>TikTok</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('gads')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'gads' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
-            >
-              <Megaphone className="w-4 h-4" />
-              <span>Google Ads</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('gsc')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'gsc' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
-            >
-              <Search className="w-4 h-4" />
-              <span>Search Console</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('youtube')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'youtube' ? 'border-[#3E1510] text-[#3E1510]' : 'border-transparent text-[#A88C87] hover:text-[#5C4541]'}`}
-            >
-              <PlaySquare className="w-4 h-4" />
-              <span>YouTube</span>
-            </button>
-            <div className="border-l border-[#EAE3D9] mx-2 h-6 self-start mt-1"></div>
-            <button 
-              onClick={() => setActiveTab('draft')}
-              className={`flex items-center space-x-2 pb-4 border-b-2 font-bold text-sm transition-colors whitespace-nowrap ${activeTab === 'draft' ? 'border-[#A43927] text-[#A43927]' : 'border-transparent text-[#7A2B20] hover:text-[#A43927]'}`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Review Draft</span>
-            </button>
+
+            {/* Pinned Draft Tab */}
+            <div className="flex items-center ml-4 shrink-0 pb-4" style={{ marginBottom: '-16px', paddingBottom: '16px' }}>
+              <div className="border-l border-[#EAE3D9] h-6 mr-4 self-center mt-[-16px]"></div>
+              <button 
+                onClick={() => setActiveTab('draft')}
+                className={`flex items-center space-x-2 border-b-2 text-sm transition-colors whitespace-nowrap ${activeTab === 'draft' ? 'border-[#A43927] text-[#A43927] font-bold' : 'border-transparent text-[#7A2B20] hover:text-[#A43927] font-bold'}`}
+              >
+                <FileText className="w-4 h-4" />
+                <span>Draft</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8 layout-content">
-          <div className="max-w-6xl mx-auto space-y-8">
-            
-            {/* TAB CONTENT: Executive Overview */}
-            {activeTab === 'executive' && (
-              <>
-                {/* Top Stat Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Digital Revenue</p>
-                    <div className="flex items-end justify-between">
-                      <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">IDR 169.5<span className="text-xl text-[#A88C87] font-medium">M</span></h3>
-                      <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">+12%</div>
+        <div className="flex-1 overflow-y-auto layout-content relative">
+          <div className="p-4 md:p-8 pb-32">
+            <div className="max-w-6xl mx-auto space-y-8">
+              
+              {/* TAB CONTENT: Executive Overview */}
+              {activeTab === 'executive' && (
+                <>
+                  {/* Top Stat Cards as a single full-width layout */}
+                  <div className="bg-white border border-[#EAE3D9] rounded-2xl shadow-sm flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-[#EAE3D9] overflow-hidden">
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                      <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Digital Revenue</p>
+                      <div className="flex items-end justify-between">
+                        <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">IDR 169.5<span className="text-xl text-[#A88C87] font-medium">M</span></h3>
+                        <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">+12%</div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Content Reach</p>
-                    <div className="flex items-end justify-between">
-                      <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">545<span className="text-xl text-[#A88C87] font-medium">k</span></h3>
-                      <div className="px-2.5 py-1 bg-[#FDF4E6] text-[#A46A38] text-[11px] font-bold rounded uppercase tracking-wider border border-[#F5E1C8]">+340%</div>
+                    
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                      <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Content Reach</p>
+                      <div className="flex items-end justify-between">
+                        <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">545<span className="text-xl text-[#A88C87] font-medium">k</span></h3>
+                        <div className="px-2.5 py-1 bg-[#FDF4E6] text-[#A46A38] text-[11px] font-bold rounded uppercase tracking-wider border border-[#F5E1C8]">+340%</div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                      <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Brand Mentions</p>
+                      <div className="flex items-end justify-between">
+                        <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">1,005</h3>
+                        <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">+8%</div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Brand Mentions</p>
-                    <div className="flex items-end justify-between">
-                      <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">1,005</h3>
-                      <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">+8%</div>
-                    </div>
+                  {/* Main AI Chart */}
+                  <div className="relative">
+                    <RevenueChart />
                   </div>
-                </div>
+                </>
+              )}
 
-                {/* Main AI Chart */}
-                <div className="relative">
-                  {/* Note about AI Hover */}
-                  <div className="absolute -top-3.5 right-6 bg-[#3E1510] text-[#E6DFD6] text-[11px] uppercase tracking-wide font-bold px-4 py-1.5 rounded shadow-lg z-10 flex items-center animate-bounce border border-[#522019]">
-                    ✨ Hover over the peak for AI Analysis
-                  </div>
-                  
-                  <RevenueChart />
-                </div>
-                
-                {/* Draft Report Alert */}
-                <div className="bg-gradient-to-r from-[#4A1A14] to-[#7A2B20] rounded-2xl p-7 shadow-lg text-white flex items-center justify-between border border-[#3E1510]/50 relative overflow-hidden">
-                  {/* Decorative background element */}
-                  <div className="absolute right-0 top-0 w-64 h-full bg-white opacity-5 transform skew-x-12 translate-x-10"></div>
-                  
-                  <div className="relative z-10">
-                    <h3 className="text-xl font-serif font-bold mb-1.5 flex items-center">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#DDA77B] mr-3 animate-pulse"></span>
-                      Month-End Draft Ready for Review
-                    </h3>
-                    <p className="text-[#E6DFD6] text-sm/relaxed max-w-2xl font-light">
-                      The AI has generated the narrative analysis based on April's aggregated data across all connected platforms. Review and edit the insights before sending to Management.
-                    </p>
-                  </div>
-                  <button className="relative z-10 bg-[#F9F7F4] text-[#3E1510] px-6 py-3 rounded-lg text-sm font-bold shadow-sm hover:bg-white transition-colors border-b-4 border-[#EAE3D9] active:border-b-0 active:translate-y-1">
-                    Review & Edit Draft
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* TAB CONTENT: Meta */}
+              {/* TAB CONTENT: Meta */}
             {activeTab === 'meta' && (
               <MetaPlatformOverview />
             )}
@@ -172,14 +220,66 @@ function App() {
               <DraftReportView />
             )}
 
-            {/* TAB CONTENT: Placeholder for incomplete connectors */}
+            {/* TAB CONTENT: TikTok */}
             {activeTab === 'tiktok' && <TiktokPlatformOverview />}
+
+            {/* TAB CONTENT: Google Ads */}
             {activeTab === 'gads' && <GadsPlatformOverview />}
+
+            {/* TAB CONTENT: Google Search Console */}
             {activeTab === 'gsc' && <GscPlatformOverview />}
+
+            {/* TAB CONTENT: YouTube */}
             {activeTab === 'youtube' && <YoutubePlatformOverview />}
+
+            {/* TAB CONTENT: Connectors Setup */}
+            {activeTab === 'connectors' && <ConnectorsSetup />}
 
           </div>
         </div>
+        </div>
+        
+        {/* Sticky Footer: Draft Report Alert - shown when on Executive tab */}
+        {activeTab === 'executive' && (
+          <div className="bg-[#4A1A14] border-t-2 border-[#DDA77B]/50 shrink-0 shadow-[0_-10px_40px_rgba(62,21,16,0.15)] relative overflow-hidden">
+            {/* Decorative background element */}
+            <div className="absolute right-0 top-0 w-64 h-full bg-white opacity-5 transform skew-x-12 translate-x-10 pointer-events-none"></div>
+            
+            <div className="max-w-6xl mx-auto px-4 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="relative z-10">
+                <h3 className="text-lg md:text-xl font-serif font-bold text-white mb-1 flex items-center">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#DDA77B] mr-3 animate-pulse"></span>
+                  Month-End Draft Ready for Review
+                </h3>
+                <p className="text-[#E6DFD6] text-xs md:text-sm font-medium w-full lg:max-w-xl">
+                  The AI has generated the narrative analysis based on April's aggregated data.
+                </p>
+              </div>
+              <button 
+                onClick={() => setActiveTab('draft')}
+                className="relative z-10 shrink-0 bg-[#F9F7F4] text-[#3E1510] px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg text-sm font-bold shadow hover:bg-white transition-colors"
+                style={{
+                  boxShadow: '0 4px 0 #EAE3D9',
+                  transform: 'translateY(0)',
+                }}
+                onMouseDown={(e) => {
+                   e.currentTarget.style.boxShadow = '0 0px 0 #EAE3D9';
+                   e.currentTarget.style.transform = 'translateY(4px)';
+                }}
+                onMouseUp={(e) => {
+                   e.currentTarget.style.boxShadow = '0 4px 0 #EAE3D9';
+                   e.currentTarget.style.transform = 'translateY(0)';
+                }}
+                onMouseLeave={(e) => {
+                   e.currentTarget.style.boxShadow = '0 4px 0 #EAE3D9';
+                   e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                Review & Edit Draft
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
