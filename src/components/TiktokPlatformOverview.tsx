@@ -1,8 +1,18 @@
 import React from 'react';
 import { tiktokKpis, tiktokTopVideos, tiktokAdsCampaigns } from '../utils/mockData';
 import { Video, Heart, Share2, TrendingUp, Sparkles, UserPlus, PlayCircle, Flame } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 
 export function TiktokPlatformOverview() {
+  // Format video data for chart
+  const chartData = tiktokTopVideos.map(video => ({
+    ...video,
+    shortTitle: video.title.length > 20 ? video.title.substring(0, 20) + '...' : video.title,
+    viewsK: video.views / 1000,
+    likesK: video.likes / 1000,
+    sharesK: video.shares / 1000
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -47,6 +57,37 @@ export function TiktokPlatformOverview() {
                 <span className="text-[10px] font-bold uppercase tracking-wider">New Followers</span>
               </div>
               <p className="text-xl font-bold text-[#3E1510]">+{tiktokKpis.followerGrowth}</p>
+            </div>
+          </div>
+
+          {/* Video Engagement Breakdown Chart */}
+          <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-serif font-bold text-[#3E1510] text-lg">Top Videos Engagement Breakdown</h3>
+            </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EAE3D9" />
+                  <XAxis dataKey="shortTitle" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#A88C87' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A88C87' }} tickFormatter={(val) => `${val}k`} />
+                  <Tooltip 
+                    cursor={{fill: '#F9F7F4'}}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #EAE3D9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: number, name: string) => {
+                      if (name === 'viewsK') return [`${value.toFixed(1)}k`, 'Views'];
+                      if (name === 'likesK') return [`${value.toFixed(1)}k`, 'Likes'];
+                      if (name === 'sharesK') return [`${value.toFixed(1)}k`, 'Shares'];
+                      return value;
+                    }}
+                    labelStyle={{ color: '#3E1510', fontWeight: 'bold', marginBottom: '4px' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Bar dataKey="viewsK" name="Views" stackId="a" fill="#DDA77B" radius={[0, 0, 4, 4]} barSize={40} />
+                  <Bar dataKey="likesK" name="Likes" stackId="a" fill="#A43927" />
+                  <Bar dataKey="sharesK" name="Shares" stackId="a" fill="#3E1510" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

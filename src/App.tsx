@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { RevenueChart } from './components/RevenueChart';
@@ -10,11 +10,23 @@ import { GadsPlatformOverview } from './components/GadsPlatformOverview';
 import { GscPlatformOverview } from './components/GscPlatformOverview';
 import { YoutubePlatformOverview } from './components/YoutubePlatformOverview';
 import { ConnectorsSetup } from './components/ConnectorsSetup';
-import { LayoutDashboard, Share2, Globe, FileText, Video, Search, PlaySquare, Megaphone, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Share2, Globe, FileText, Video, Search, PlaySquare, Megaphone, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { auth, onAuthStateChanged } from './lib/firebase';
+import { Login } from './components/Login';
 
 function App() {
   const [activeTab, setActiveTab] = useState<'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors'>('connectors');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Simple placeholder for platforms not fully built out yet
   const PlaceholderView = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
@@ -25,9 +37,22 @@ function App() {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F7F4]">
+        <Loader2 className="w-8 h-8 text-[#7A2B20] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   return (
     <div className="flex min-h-screen bg-[#F9F7F4] font-sans text-[#3E1510]">
       <Sidebar 
+        activeTab={activeTab}
         setActiveTab={setActiveTab} 
         isMobileOpen={isMobileSidebarOpen} 
         onCloseMobile={() => setIsMobileSidebarOpen(false)} 
@@ -39,7 +64,7 @@ function App() {
         {/* Tab Navigation Menu */}
         <div className="bg-white border-b border-[#EAE3D9]">
           {/* Mobile Select Dropdown */}
-          <div className="md:hidden p-4">
+          <div className="md:hidden p-4 relative">
             <select 
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value as any)}
@@ -55,7 +80,7 @@ function App() {
               <option value="draft">Review Draft (Month-End)</option>
             </select>
             {/* Custom dropdown arrow for mobile select */}
-            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center px-4 pt-4">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
                <svg className="fill-current h-4 w-4 text-[#3E1510]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
             </div>
           </div>
@@ -173,7 +198,7 @@ function App() {
                 <>
                   {/* Top Stat Cards as a single full-width layout */}
                   <div className="bg-white border border-[#EAE3D9] rounded-2xl shadow-sm flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-[#EAE3D9] overflow-hidden">
-                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] hover:border-l-4 hover:border-l-[#7A2B20] transition-all duration-200 relative group">
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Digital Revenue</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">IDR 169.5<span className="text-xl text-[#A88C87] font-medium">M</span></h3>
@@ -181,7 +206,7 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] hover:border-l-4 hover:border-l-[#DDA77B] transition-all duration-200 relative group">
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Content Reach</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">545<span className="text-xl text-[#A88C87] font-medium">k</span></h3>
@@ -189,7 +214,7 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] transition-colors relative group">
+                    <div className="p-6 flex-1 hover:bg-[#F9F7F4] hover:border-l-4 hover:border-l-[#2E6B3B] transition-all duration-200 relative group">
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Brand Mentions</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">1,005</h3>

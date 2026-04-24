@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Home, BarChart2, PieChart, MessageSquare, FileText, Settings, Navigation, ChevronLeft, ChevronRight, Globe, X } from 'lucide-react';
+import { Home, BarChart2, PieChart, MessageSquare, FileText, Settings, Navigation, ChevronLeft, ChevronRight, Globe, X, Video, Megaphone, Search, PlaySquare } from 'lucide-react';
 
 interface SidebarProps {
-  setActiveTab?: (tab: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft') => void;
+  activeTab?: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors';
+  setActiveTab?: (tab: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors') => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
-export function Sidebar({ setActiveTab, isMobileOpen, onCloseMobile }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Auto-collapse sidebar on tablet screens
@@ -31,6 +32,10 @@ export function Sidebar({ setActiveTab, isMobileOpen, onCloseMobile }: SidebarPr
     if (setActiveTab) setActiveTab(tab);
     if (onCloseMobile) onCloseMobile();
   };
+
+  const isActive = (tab: string) => activeTab === tab;
+
+  console.log("Current activeTab in Sidebar:", activeTab);
 
   return (
     <>
@@ -103,45 +108,65 @@ export function Sidebar({ setActiveTab, isMobileOpen, onCloseMobile }: SidebarPr
             {isCollapsed ? 'Dash' : 'Dashboards'}
           </p>
           
-          <button onClick={() => handleTabClick('executive')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} bg-[#522019] text-white rounded-lg group transition-colors`} title="Executive Dashboard">
-            <Home className={`w-5 h-5 shrink-0 ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">Executive Dashboard</span>}
+          <button onClick={() => handleTabClick('executive')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('executive') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Executive Dashboard">
+            <Home className={`w-5 h-5 shrink-0 transition-colors ${isActive('executive') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('executive') ? 'text-white' : 'text-[#E6DFD6]'}`}>Executive Dashboard</span>}
           </button>
           
           {/* We map the other sidebar items to the closest connector for demo purposes */}
-          <button onClick={() => handleTabClick('meta')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} hover:bg-[#522019]/50 text-left rounded-lg group transition-colors`} title="Revenue & Meta Ads">
-            <BarChart2 className={`w-5 h-5 shrink-0 text-[#A88C87] group-hover:text-[#E6DFD6] ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">Meta Ads & Organic</span>}
+          <button onClick={() => handleTabClick('meta')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('meta') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Revenue & Meta Ads">
+            <BarChart2 className={`w-5 h-5 shrink-0 transition-colors ${isActive('meta') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('meta') ? 'text-white' : 'text-[#E6DFD6]'}`}>Meta Ads & Organic</span>}
           </button>
 
-          <button onClick={() => handleTabClick('ga4')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} hover:bg-[#522019]/50 text-left rounded-lg group transition-colors`} title="Website & GA4">
-            <Globe className={`w-5 h-5 shrink-0 text-[#A88C87] group-hover:text-[#E6DFD6] ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">Website (GA4)</span>}
+          <button onClick={() => handleTabClick('ga4')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('ga4') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Website & GA4">
+            <Globe className={`w-5 h-5 shrink-0 transition-colors ${isActive('ga4') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('ga4') ? 'text-white' : 'text-[#E6DFD6]'}`}>Website (GA4)</span>}
           </button>
 
-          <button className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} hover:bg-[#522019]/50 text-left rounded-lg group transition-colors flex-shrink-0`} title="Brand Mentions">
-            <MessageSquare className={`w-5 h-5 shrink-0 text-[#A88C87] group-hover:text-[#E6DFD6] ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className="font-medium text-sm whitespace-nowrap">Brand Mentions</span>}
+          <button onClick={() => handleTabClick('tiktok')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('tiktok') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="TikTok">
+            <Video className={`w-5 h-5 shrink-0 transition-colors ${isActive('tiktok') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('tiktok') ? 'text-white' : 'text-[#E6DFD6]'}`}>TikTok</span>}
+          </button>
+
+          <button onClick={() => handleTabClick('gads')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('gads') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Google Ads">
+            <Megaphone className={`w-5 h-5 shrink-0 transition-colors ${isActive('gads') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('gads') ? 'text-white' : 'text-[#E6DFD6]'}`}>Google Ads</span>}
+          </button>
+
+          <button onClick={() => handleTabClick('gsc')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('gsc') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Search Console">
+            <Search className={`w-5 h-5 shrink-0 transition-colors ${isActive('gsc') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('gsc') ? 'text-white' : 'text-[#E6DFD6]'}`}>Search Console</span>}
+          </button>
+
+          <button onClick={() => handleTabClick('youtube')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors ${isActive('youtube') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="YouTube">
+            <PlaySquare className={`w-5 h-5 shrink-0 transition-colors ${isActive('youtube') ? 'text-white' : 'text-[#A88C87] group-hover:text-[#E6DFD6]'} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('youtube') ? 'text-white' : 'text-[#E6DFD6]'}`}>YouTube</span>}
+          </button>
+
+          <button disabled className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} text-left rounded-lg transition-colors flex-shrink-0 opacity-50 cursor-not-allowed`} title="Brand Mentions (Coming Soon)">
+            <MessageSquare className={`w-5 h-5 shrink-0 text-[#A88C87] ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className="font-medium text-sm text-[#E6DFD6] whitespace-nowrap">Brand Mentions</span>}
           </button>
 
           <div className="pt-8 pb-2">
             <p className={`text-[10px] font-semibold text-[#A88C87] uppercase tracking-widest mb-3 ${isCollapsed ? 'text-center truncate px-0' : 'px-3'}`}>
               {isCollapsed ? 'Rep' : 'Reporting'}
             </p>
-            <button onClick={() => handleTabClick('draft')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} hover:bg-[#522019]/50 text-left rounded-lg group transition-colors relative`} title="Month-End Draft">
-              <FileText className={`w-5 h-5 shrink-0 text-[#DDA77B] ${!isCollapsed && 'mr-3'}`} />
-              {!isCollapsed && <span className="font-medium text-sm text-[#E6DFD6] whitespace-nowrap">Month-End Draft</span>}
-              {!isCollapsed && <span className="absolute right-3 w-2 h-2 rounded-full bg-[#DDA77B]"></span>}
-              {isCollapsed && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#DDA77B]"></span>}
+            <button onClick={() => handleTabClick('draft')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} rounded-lg group transition-colors relative ${isActive('draft') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87]'}`} title="Month-End Draft">
+              <FileText className={`w-5 h-5 shrink-0 transition-colors ${isActive('draft') ? 'text-white' : 'text-[#DDA77B]'} ${!isCollapsed && 'mr-3'}`} />
+              {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('draft') ? 'text-white' : 'text-[#E6DFD6]'}`}>Month-End Draft</span>}
+              {!isCollapsed && <span className={`absolute right-3 w-2 h-2 rounded-full ${isActive('draft') ? 'bg-white' : 'bg-[#DDA77B]'}`}></span>}
+              {isCollapsed && <span className={`absolute top-2 right-2 w-2 h-2 rounded-full ${isActive('draft') ? 'bg-white' : 'bg-[#DDA77B]'}`}></span>}
             </button>
           </div>
         </nav>
 
         {/* User / Settings / Credits */}
         <div className={`p-4 border-t border-[#522019] space-y-4 overflow-hidden shrink-0 ${isCollapsed ? 'text-center' : ''}`}>
-          <button onClick={() => handleTabClick('connectors')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2 hover:bg-[#522019]/50 rounded-lg transition-colors text-sm text-[#A88C87] hover:text-[#E6DFD6]`} title="Connectors Setup">
-            <Settings className={`w-5 h-5 shrink-0 ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className="whitespace-nowrap">Connectors Setup</span>}
+          <button onClick={() => handleTabClick('connectors')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2 rounded-lg transition-colors text-sm ${isActive('connectors') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87] hover:text-[#E6DFD6]'}`} title="Connectors Setup">
+            <Settings className={`w-5 h-5 shrink-0 transition-colors ${isActive('connectors') ? 'text-white' : ''} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`whitespace-nowrap transition-colors ${isActive('connectors') ? 'text-white' : ''}`}>Connectors Setup</span>}
           </button>
           
           {/* ImmerShift Footer Credit */}

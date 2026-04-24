@@ -1,5 +1,5 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { northStarData } from '../utils/mockData';
 import { Sparkles, TrendingUp } from 'lucide-react';
 
@@ -45,8 +45,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function RevenueChart() {
   return (
-    <div className="bg-white border border-[#EAE3D9] rounded-2xl shadow-sm p-6 lg:p-8">
-      <div className="flex items-start justify-between mb-8">
+    <div className="bg-white border border-[#EAE3D9] rounded-2xl shadow-sm p-6 lg:p-8 relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-[10px] font-semibold text-[#A88C87] uppercase tracking-wider flex items-center gap-1.5 bg-[#F9F7F4] border border-[#EAE3D9] px-2.5 py-1.5 rounded-full pointer-events-none">
+        ✦ Hover peak for AI insight
+      </div>
+      
+      <div className="flex items-start justify-between mb-8 pr-48">
         <div>
           <h3 className="text-xl font-serif font-bold text-[#3E1510] flex items-center">
             Digital Bookings & Content Reach
@@ -55,10 +59,6 @@ export function RevenueChart() {
             </span>
           </h3>
           <p className="text-sm text-[#A88C87] font-medium mt-1">Correlation between content interactions and table bookings</p>
-        </div>
-        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-md bg-[#FDF8F3] border border-[#F5E1C8] text-[11px] font-bold text-[#A46A38] uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#DDA77B]" />
-          Hover peak for AI Analysis
         </div>
       </div>
       

@@ -1,8 +1,33 @@
 import React from 'react';
-import { gscKpis, gscQueries } from '../utils/mockData';
-import { Search, MousePointerClick, Eye, Target, Sparkles, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { useGSCData } from '../hooks/useRealData';
+import { Search, MousePointerClick, Eye, Target, Sparkles, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react';
 
 export function GscPlatformOverview() {
+  const { overview, topQueries, isLoading, error } = useGSCData();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#7A2B20] animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-[50vh] items-center justify-center text-center p-6 bg-[#FFF9F9] border border-[#FEE2E2] rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <span className="text-red-600 font-bold">!</span>
+        </div>
+        <h3 className="font-serif font-bold text-xl text-[#3E1510] mb-2">Failed to load GSC data</h3>
+        <p className="text-[#A43927] max-w-md">{error}</p>
+      </div>
+    );
+  }
+
+  const gscKpis = overview || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+  const gscQueries = topQueries || [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -32,21 +57,21 @@ export function GscPlatformOverview() {
                 <Eye className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Impressions</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{(gscKpis.impressions / 1000).toFixed(1)}<span className="text-sm text-[#A88C87]">k</span></p>
+              <p className="text-xl font-bold text-[#3E1510]">{Math.round(gscKpis.impressions / 1000)}<span className="text-sm text-[#A88C87]">k</span></p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg. CTR</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{gscKpis.avgCtr}%</p>
+              <p className="text-xl font-bold text-[#3E1510]">{(gscKpis.ctr * 100).toFixed(2)}%</p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Target className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg. Position</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{gscKpis.avgPosition}</p>
+              <p className="text-xl font-bold text-[#3E1510]">{gscKpis.position.toFixed(1)}</p>
             </div>
           </div>
 
@@ -67,8 +92,8 @@ export function GscPlatformOverview() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
-                  {gscQueries.map((item) => (
-                    <tr key={item.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
+                  {gscQueries.map((item: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <span className="font-medium text-[#5C4541] truncate max-w-[200px] block" title={item.query}>
                           {item.query}
@@ -76,11 +101,11 @@ export function GscPlatformOverview() {
                       </td>
                       <td className="px-6 py-4 text-right text-[#3E1510] font-bold">{(item.clicks / 1000).toFixed(1)}k</td>
                       <td className="px-6 py-4 text-right text-[#A88C87]">{(item.impressions / 1000).toFixed(1)}k</td>
-                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{item.ctr}%</td>
+                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{(item.ctr * 100).toFixed(2)}%</td>
                       <td className="px-6 py-4 text-right text-[#5C4541]">
                         <div className="flex items-center justify-end">
                           <span className={`w-2 h-2 rounded-full mr-2 ${item.position <= 3 ? 'bg-[#2E6B3B]' : item.position <= 10 ? 'bg-[#DDA77B]' : 'bg-slate-300'}`}></span>
-                          {item.position}
+                          {item.position.toFixed(1)}
                         </div>
                       </td>
                     </tr>
@@ -132,7 +157,7 @@ export function GscPlatformOverview() {
             <div className="space-y-4">
               <div className="p-4 bg-[#F9F7F4] rounded-lg border border-[#EAE3D9]/50">
                 <p className="text-[10px] text-[#A88C87] uppercase font-bold tracking-wider mb-1">Keywords on Page 2</p>
-                <p className="text-2xl font-serif font-bold text-[#3E1510]">24</p>
+                <p className="text-2xl font-serif font-bold text-[#3E1510]">{gscQueries.filter((q: any) => q.position > 10 && q.position <= 20).length}</p>
                 <p className="text-xs text-[#5C4541] mt-1">Queries ranking pos. 11-20 showing potential.</p>
               </div>
               <div className="p-4 bg-[#F9F7F4] rounded-lg border border-[#EAE3D9]/50">

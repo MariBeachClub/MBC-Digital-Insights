@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Share2, Globe, Video, Megaphone, Search, PlaySquare, Mail, Store, AlertCircle, CheckCircle2, ChevronRight, Activity, Sparkles, Instagram } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Share2, Globe, Video, Megaphone, Search, PlaySquare, Mail, Store, AlertCircle, CheckCircle2, ChevronRight, Activity, Sparkles, Instagram, Link, Save, Loader2 } from 'lucide-react';
+import { getWebAppUrl, saveWebAppUrl } from '../utils/api';
 
 const connectorCategories = [
   {
@@ -42,17 +43,44 @@ const connectorCategories = [
 
 export function ConnectorsSetup() {
   const [syncing, setSyncing] = useState(false);
+  const [appScriptUrl, setAppScriptUrl] = useState('');
+  const [isSavingUrl, setIsSavingUrl] = useState(false);
+  const [urlSaved, setUrlSaved] = useState(false);
+  const [loadingUrl, setLoadingUrl] = useState(true);
 
   // Count connected
   const allConnectors = connectorCategories.flatMap(c => c.connectors);
   const connectedCount = allConnectors.filter(c => c.status === 'connected').length;
   const totalCount = allConnectors.length;
 
+  useEffect(() => {
+    async function fetchUrl() {
+      const url = await getWebAppUrl();
+      setAppScriptUrl(url);
+      setLoadingUrl(false);
+    }
+    fetchUrl();
+  }, []);
+
   const handleSync = () => {
     setSyncing(true);
     setTimeout(() => {
       setSyncing(false);
     }, 2000);
+  };
+
+  const handleSaveUrl = async () => {
+    setIsSavingUrl(true);
+    try {
+      await saveWebAppUrl(appScriptUrl);
+      setUrlSaved(true);
+      setTimeout(() => setUrlSaved(false), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save Web App URL.");
+    } finally {
+      setIsSavingUrl(false);
+    }
   };
 
   return (
@@ -66,6 +94,14 @@ export function ConnectorsSetup() {
           <p className="text-[#A88C87] mt-2 font-medium max-w-xl">
             Manage your data sources. Connect platforms to automatically sync marketing data into your executive narratives and dashboards.
           </p>
+          <div className="flex items-center gap-4 mt-3 text-xs text-[#A88C87]">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2E6B3B] animate-pulse"></span>
+              Last full sync: Today at 08:30 AM
+            </span>
+            <span>•</span>
+            <span>Next auto-sync: Tomorrow at 06:00 AM</span>
+          </div>
         </div>
         <div className="flex flex-col items-start sm:items-end shrink-0">
           <div className="flex items-center space-x-2 text-sm font-bold text-[#5C4541] mb-3 bg-[#FDF8F3] border border-[#F5E1C8] px-3 py-1.5 rounded-full shadow-sm">
@@ -89,6 +125,62 @@ export function ConnectorsSetup() {
 
       {/* Main Container */}
       <div className="space-y-10 mt-8">
+        
+        {/* API Bridging Setup */}
+        <div className="bg-[#FDF8F3] border border-[#DDA77B]/40 rounded-2xl shadow-sm p-6 relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+             <Link className="w-32 h-32 text-[#DDA77B]" />
+           </div>
+           
+           <div className="relative z-10 max-w-2xl">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-[#DDA77B]/20 flex items-center justify-center">
+                  <Globe className="w-4 h-4 text-[#A43927]" />
+                </div>
+                <h3 className="text-xl font-bold font-serif text-[#3E1510]">Master Data Source</h3>
+              </div>
+              <p className="text-[#5C4541] mb-6 text-sm">
+                Paste the Web App URL from your Google Apps Script deployment. The dashboard will automatically fetch current Analytics, Search Console, and YouTube metrics from this endpoint.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Link className="h-4 w-4 text-[#A88C87]" />
+                  </div>
+                  {loadingUrl ? (
+                    <div className="block w-full pl-10 pr-3 py-2.5 sm:text-sm bg-white border border-[#EAE3D9] rounded-lg animate-pulse h-[42px]"></div>
+                  ) : (
+                    <input
+                      type="url"
+                      name="appScriptUrl"
+                      id="appScriptUrl"
+                      value={appScriptUrl}
+                      onChange={(e) => setAppScriptUrl(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2.5 sm:text-sm bg-white border border-[#EAE3D9] rounded-lg focus:ring-[#DDA77B] focus:border-[#DDA77B] placeholder:text-[#A88C87] text-[#3E1510] shadow-sm transition-colors"
+                      placeholder="https://script.google.com/macros/s/.../exec"
+                    />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSaveUrl}
+                  disabled={loadingUrl || isSavingUrl || !appScriptUrl}
+                  className="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-[#7A2B20] hover:bg-[#522019] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#DDA77B] disabled:opacity-50 transition-colors"
+                >
+                  {isSavingUrl ? (
+                    <Loader2 className="w-4 h-4 animate-spin -ml-1 mr-2" />
+                  ) : urlSaved ? (
+                    <CheckCircle2 className="w-4 h-4 -ml-1 mr-2 text-green-300" />
+                  ) : (
+                    <Save className="w-4 h-4 -ml-1 mr-2" />
+                  )}
+                  {urlSaved ? 'Saved!' : 'Save URL'}
+                </button>
+              </div>
+           </div>
+        </div>
+
         {connectorCategories.map((category) => (
           <div key={category.title} className="space-y-4">
             <h3 className="text-xl font-bold font-serif text-[#5C4541] px-2">{category.title}</h3>

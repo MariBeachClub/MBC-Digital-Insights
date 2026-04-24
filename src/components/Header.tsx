@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, Filter, Share2, Download, Sparkles, ChevronDown, Check, Menu } from 'lucide-react';
+import { Calendar, Filter, Share2, Download, Sparkles, ChevronDown, Check, Menu, LogOut } from 'lucide-react';
+import { auth, signOut } from '../lib/firebase';
+import { useDateRange } from '../contexts/DateContext';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -7,15 +9,55 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [selectedRange, setSelectedRange] = useState('April 2026');
+  const { label, setDateRange } = useDateRange();
+
+  const formatDate = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const calculateDateRange = (labelName: string) => {
+    const today = new Date();
+    
+    if (labelName === 'Today') {
+      return { start: formatDate(today), end: formatDate(today) };
+    }
+    if (labelName === 'Yesterday') {
+      const y = new Date(today);
+      y.setDate(y.getDate() - 1);
+      return { start: formatDate(y), end: formatDate(y) };
+    }
+    if (labelName === 'Last 7 Days') {
+      const s = new Date(today);
+      s.setDate(s.getDate() - 7);
+      return { start: formatDate(s), end: formatDate(today) };
+    }
+    if (labelName === 'Last 30 Days') {
+      const s = new Date(today);
+      s.setDate(s.getDate() - 30);
+      return { start: formatDate(s), end: formatDate(today) };
+    }
+    if (labelName === 'This Month') {
+      const s = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { start: formatDate(s), end: formatDate(today) };
+    }
+    if (labelName === 'Last Month') {
+      const s = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const e = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { start: formatDate(s), end: formatDate(e) };
+    }
+    return { start: formatDate(today), end: formatDate(today) };
+  };
 
   const dateRanges = [
     { label: 'Today', value: 'Today' },
     { label: 'Yesterday', value: 'Yesterday' },
     { label: 'Last 7 Days', value: 'Last 7 Days' },
     { label: 'Last 30 Days', value: 'Last 30 Days' },
-    { label: 'This Month', value: 'April 2026' },
-    { label: 'Last Month', value: 'March 2026' },
+    { label: 'This Month', value: 'This Month' },
+    { label: 'Last Month', value: 'Last Month' },
   ];
 
   return (
@@ -50,7 +92,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             className={`flex items-center bg-white border ${isDatePickerOpen ? 'border-[#DDA77B] ring-1 ring-[#DDA77B]/20' : 'border-[#EAE3D9]'} rounded-lg px-3 py-2 text-sm font-medium text-[#5C4541] cursor-pointer hover:bg-[#F9F7F4] transition-all shadow-sm whitespace-nowrap hidden sm:flex`}
           >
             <Calendar className="w-4 h-4 mr-2 text-[#A88C87] shrink-0" />
-            {selectedRange}
+            {label}
             <ChevronDown className={`w-4 h-4 ml-2 text-[#A88C87] transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
           </button>
           
@@ -75,15 +117,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <button
                     key={range.label}
                     onClick={() => {
-                      setSelectedRange(range.value);
+                      const { start, end } = calculateDateRange(range.value);
+                      setDateRange(start, end, range.label);
                       setIsDatePickerOpen(false);
                     }}
                     className="w-full text-left px-4 py-2.5 text-sm hover:bg-[#FDF8F3] transition-colors flex items-center justify-between group"
                   >
-                    <span className={`${selectedRange === range.value ? 'font-bold text-[#7A2B20]' : 'font-medium text-[#5C4541] group-hover:text-[#3E1510]'}`}>
+                    <span className={`${label === range.label ? 'font-bold text-[#7A2B20]' : 'font-medium text-[#5C4541] group-hover:text-[#3E1510]'}`}>
                       {range.label}
                     </span>
-                    {selectedRange === range.value && (
+                    {label === range.label && (
                       <Check className="w-4 h-4 text-[#DDA77B]" />
                     )}
                   </button>
@@ -114,6 +157,14 @@ export function Header({ onMenuClick }: HeaderProps) {
         <button className="flex items-center bg-[#7A2B20] text-white rounded-lg px-4 py-2 text-sm font-bold hover:bg-[#5D221A] transition-colors shadow-sm whitespace-nowrap shrink-0">
           <Download className="w-4 h-4 sm:mr-2 shrink-0" />
           <span className="hidden sm:inline">Export</span>
+        </button>
+        <button 
+          onClick={() => signOut(auth)}
+          className="ml-2 text-[#A88C87] hover:text-[#7A2B20] p-1.5 transition-colors shrink-0 flex items-center justify-center bg-white border border-[#EAE3D9] rounded-lg shadow-sm w-9 h-9 sm:w-auto sm:px-3 sm:py-2"
+          title="Sign out"
+        >
+          <LogOut className="w-4 h-4 sm:mr-2 shrink-0" />
+          <span className="hidden sm:inline text-sm font-semibold">Log out</span>
         </button>
       </div>
     </header>

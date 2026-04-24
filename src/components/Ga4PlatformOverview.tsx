@@ -1,9 +1,51 @@
 import React from 'react';
-import { ga4Kpis, ga4TopPages, ga4TrafficSources } from '../utils/mockData';
-import { Globe, Users, Clock, MousePointer2, Sparkles, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon } from 'lucide-react';
+import { useGA4Data } from '../hooks/useRealData';
+import { Globe, Users, Clock, MousePointer2, Sparkles, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Loader2 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 export function Ga4PlatformOverview() {
+  const { overview, topPages, trafficSources, isLoading, error } = useGA4Data();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#7A2B20] animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-[50vh] items-center justify-center text-center p-6 bg-[#FFF9F9] border border-[#FEE2E2] rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <span className="text-red-600 font-bold">!</span>
+        </div>
+        <h3 className="font-serif font-bold text-xl text-[#3E1510] mb-2">Failed to load GA4 data</h3>
+        <p className="text-[#A43927] max-w-md">{error}</p>
+      </div>
+    );
+  }
+
+  // Fallback to empty if not present
+  const ga4Kpis = overview || { sessions: 0, users: 0, bounceRate: 0, avgSessionDuration: 0 };
+  const ga4TopPages = topPages || [];
+  const ga4TrafficSources = trafficSources || [];
+
+  // Format avgSessionDuration from seconds to mm:ss
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Give colors to traffic sources
+  const sourceColors = ['#3E1510', '#7A2B20', '#DDA77B', '#A88C87', '#EAE3D9'];
+  const formattedSources = ga4TrafficSources.map((s: any, i: number) => ({
+    name: `${s.source} / ${s.medium}`,
+    sessions: s.sessions,
+    color: sourceColors[i % sourceColors.length]
+  })).slice(0, 5); // Limit to top 5 for the pie chart
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -40,14 +82,14 @@ export function Ga4PlatformOverview() {
                 <MousePointer2 className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Bounce Rate</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.bounceRate}%</p>
+              <p className="text-xl font-bold text-[#3E1510]">{(ga4Kpis.bounceRate * 100).toFixed(1)}%</p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Clock className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg Session</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.avgSessionDuration}</p>
+              <p className="text-xl font-bold text-[#3E1510]">{formatTime(ga4Kpis.avgSessionDuration)}</p>
             </div>
           </div>
 
@@ -62,24 +104,15 @@ export function Ga4PlatformOverview() {
                   <tr>
                     <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Page Path</th>
                     <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Pageviews</th>
-                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Avg. Time on Page</th>
-                    <th className="px-6 py-4 font-bold text-center cursor-pointer hover:bg-slate-50">Trend</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
-                  {ga4TopPages.map((page) => (
-                    <tr key={page.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
+                  {ga4TopPages.map((page: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-[#5C4541]">{page.name}</p>
-                        <p className="text-[11px] text-[#A88C87] font-mono mt-0.5">{page.path}</p>
+                        <p className="font-semibold text-[#5C4541] truncate max-w-sm">{page.path}</p>
                       </td>
                       <td className="px-6 py-4 text-right text-[#3E1510] font-medium">{page.views.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-right text-[#5C4541] font-mono text-xs">{page.avgTime}</td>
-                      <td className="px-6 py-4 text-center">
-                        {page.trend === 'up' && <TrendingUp className="w-4 h-4 text-[#2E6B3B] mx-auto" />}
-                        {page.trend === 'down' && <TrendingDown className="w-4 h-4 text-[#A43927] mx-auto" />}
-                        {page.trend === 'neutral' && <Minus className="w-4 h-4 text-[#A88C87] mx-auto" />}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -131,21 +164,21 @@ export function Ga4PlatformOverview() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={ga4TrafficSources}
+                    data={formattedSources}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
                     outerRadius={80}
                     paddingAngle={2}
-                    dataKey="users"
+                    dataKey="sessions"
                     stroke="none"
                   >
-                    {ga4TrafficSources.map((entry, index) => (
+                    {formattedSources.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                   <RechartsTooltip 
-                    formatter={(value: number) => [`${value.toLocaleString()} Users`, 'Traffic']}
+                    formatter={(value: number) => [`${value.toLocaleString()} Sessions`, 'Traffic']}
                     contentStyle={{ borderRadius: '8px', border: '1px solid #EAE3D9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                   />
                 </PieChart>
@@ -153,17 +186,17 @@ export function Ga4PlatformOverview() {
               {/* Custom Legend to match aesthetic */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-[#3E1510]">{Math.round((ga4Kpis.users / 1000))}k</p>
-                  <p className="text-[10px] font-bold text-[#A88C87] uppercase tracking-widest">Users</p>
+                  <p className="text-2xl font-bold text-[#3E1510]">{Math.round((ga4Kpis.sessions / 1000))}k</p>
+                  <p className="text-[10px] font-bold text-[#A88C87] uppercase tracking-widest">Sessions</p>
                 </div>
               </div>
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2">
-               {ga4TrafficSources.map((source, idx) => (
+               {formattedSources.map((source: any, idx: number) => (
                  <div key={idx} className="flex items-center text-[11px] font-semibold text-[#5C4541]">
-                   <div className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: source.color }}></div>
-                   <span className="truncate">{source.name}</span>
+                   <div className="w-2.5 h-2.5 rounded-full mr-2 shrink-0" style={{ backgroundColor: source.color }}></div>
+                   <span className="truncate" title={source.name}>{source.name}</span>
                  </div>
                ))}
             </div>

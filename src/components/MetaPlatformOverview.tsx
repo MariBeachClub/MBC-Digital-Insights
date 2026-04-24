@@ -1,8 +1,16 @@
 import React from 'react';
 import { metaAdsCampaigns, metaOrganicPosts } from '../utils/mockData';
 import { Facebook, Instagram, MousePointerClick, TrendingUp, Sparkles, ArrowUpRight, Target, Users } from 'lucide-react';
+import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 
 export function MetaPlatformOverview() {
+  // Format campaign names for shorter chart labels
+  const chartData = metaAdsCampaigns.map(camp => ({
+    ...camp,
+    shortName: camp.name.split('_').pop()?.substring(0, 15) || camp.name,
+    cpcLabel: camp.cpc / 1000 // Convert CPC to 'k' for simpler Y axis
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -47,6 +55,35 @@ export function MetaPlatformOverview() {
                 <span className="text-[10px] font-bold uppercase tracking-wider">Ad ROAS</span>
               </div>
               <p className="text-xl font-bold text-[#14421E]">4.2x</p>
+            </div>
+          </div>
+
+          {/* Graphical ROAS / CPC Chart */}
+          <div className="bg-white border border-[#EAE3D9] rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-serif font-bold text-[#3E1510] text-lg">Campaign CPC vs ROAS</h3>
+            </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EAE3D9" />
+                  <XAxis dataKey="shortName" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A88C87' }} dy={10} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#A88C87' }} tickFormatter={(val) => `${val}k`} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#2E6B3B' }} tickFormatter={(val) => `${val}x`} />
+                  <Tooltip 
+                    cursor={{fill: '#F9F7F4'}}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #EAE3D9', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: number, name: string) => {
+                      if (name === 'cpcLabel') return [`IDR ${value}k`, 'CPC'];
+                      return [`${value}x`, 'ROAS'];
+                    }}
+                    labelStyle={{ color: '#3E1510', fontWeight: 'bold', marginBottom: '4px' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                  <Bar yAxisId="left" dataKey="cpcLabel" name="CPC (Cost Per Click)" fill="#DDA77B" radius={[4, 4, 0, 0]} barSize={32} />
+                  <Line yAxisId="right" type="monotone" dataKey="roas" name="ROAS (Return on Ad Spend)" stroke="#2E6B3B" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
           </div>
 

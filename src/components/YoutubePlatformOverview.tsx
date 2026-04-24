@@ -1,8 +1,40 @@
 import React from 'react';
-import { youtubeKpis, youtubeVideos } from '../utils/mockData';
-import { PlaySquare, Clock, Users, Activity, Sparkles, Smartphone, Video } from 'lucide-react';
+import { useYouTubeData } from '../hooks/useRealData';
+import { PlaySquare, Clock, Users, Activity, Sparkles, Smartphone, Video, Loader2 } from 'lucide-react';
 
 export function YoutubePlatformOverview() {
+  const { overview, topVideos, isLoading, error } = useYouTubeData();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#7A2B20] animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col h-[50vh] items-center justify-center text-center p-6 bg-[#FFF9F9] border border-[#FEE2E2] rounded-2xl">
+        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+          <span className="text-red-600 font-bold">!</span>
+        </div>
+        <h3 className="font-serif font-bold text-xl text-[#3E1510] mb-2">Failed to load YouTube data</h3>
+        <p className="text-[#A43927] max-w-md">{error}</p>
+      </div>
+    );
+  }
+
+  const youtubeKpis = overview || { views: 0, watchMinutes: 0, avgDuration: 0, subscribersGained: 0 };
+  const youtubeVideos = topVideos || [];
+
+  // Format avgSessionDuration from seconds to mm:ss
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -32,21 +64,21 @@ export function YoutubePlatformOverview() {
                 <Clock className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Watch Time</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{(youtubeKpis.watchTime / 1000).toFixed(1)}<span className="text-sm text-[#A88C87]">k hrs</span></p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Users className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Subscribers</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">+{youtubeKpis.subscribers}</p>
+              <p className="text-xl font-bold text-[#3E1510]">{(youtubeKpis.watchMinutes / 60).toFixed(1)}<span className="text-sm text-[#A88C87]"> hrs</span></p>
             </div>
             <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
                 <Activity className="w-4 h-4" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Avg Duration</span>
               </div>
-              <p className="text-xl font-bold text-[#3E1510]">{youtubeKpis.avgViewDuration}</p>
+              <p className="text-xl font-bold text-[#3E1510]">{formatTime(youtubeKpis.avgDuration)}</p>
+            </div>
+            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4 opacity-50 relative overflow-hidden" title="Data source restricts this metric currently.">
+               <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
+                <Users className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Subscribers</span>
+              </div>
+              <p className="text-xl font-bold text-[#3E1510]">N/A</p>
             </div>
           </div>
 
@@ -59,28 +91,21 @@ export function YoutubePlatformOverview() {
               <table className="w-full text-sm text-left">
                 <thead className="text-[10px] uppercase tracking-wider text-[#A88C87] bg-white border-b border-[#EAE3D9]">
                   <tr>
-                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Video Title</th>
-                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Format</th>
+                    <th className="px-6 py-4 font-bold cursor-pointer hover:bg-slate-50">Video ID</th>
                     <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Views</th>
-                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Watch Hrs</th>
-                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Engagement</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Likes</th>
+                    <th className="px-6 py-4 font-bold text-right cursor-pointer hover:bg-slate-50">Shares</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
-                  {youtubeVideos.map((video) => (
-                    <tr key={video.id} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
+                  {youtubeVideos.map((video: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
-                        <span className="font-medium text-[#5C4541] truncate max-w-[200px]" title={video.title}>{video.title}</span>
+                        <span className="font-medium text-[#5C4541] truncate max-w-[200px]" title={video.videoId}>{video.videoId}</span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${video.format === 'Shorts' ? 'bg-[#7A2B20]/10 text-[#7A2B20]' : 'bg-[#3E1510]/10 text-[#3E1510]'}`}>
-                          {video.format === 'Shorts' ? <Smartphone className="w-3 h-3 mr-1" /> : <Video className="w-3 h-3 mr-1" />}
-                          {video.format}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right text-[#3E1510] font-bold">{(video.views / 1000).toFixed(1)}k</td>
-                      <td className="px-6 py-4 text-right text-[#5C4541]">{video.watchTime}</td>
-                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{video.engagement}%</td>
+                      <td className="px-6 py-4 text-right text-[#3E1510] font-bold">{video.views.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right text-[#5C4541]">{video.likes.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{video.shares}</td>
                     </tr>
                   ))}
                 </tbody>
