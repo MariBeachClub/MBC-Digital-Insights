@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGA4Data } from '../utils/api';
+import { fetchPlatformData } from '../utils/api';
 import { Globe, Users, Clock, MousePointer2, Sparkles, PieChart as PieChartIcon, Loader2, AlertCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { GA4TopPage, GA4TrafficSource } from '../types';
+import { useDateRange } from '../contexts/DateContext';
 
 export function Ga4PlatformOverview() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { startDate, endDate } = useDateRange();
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
-        const result = await fetchGA4Data();
+        const result = await fetchPlatformData('ga4', startDate, endDate);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Unknown error');
@@ -21,7 +24,7 @@ export function Ga4PlatformOverview() {
       }
     }
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
   if (isLoading) {
     return (
@@ -43,21 +46,20 @@ export function Ga4PlatformOverview() {
     );
   }
 
-  const ga4Kpis = data || { sessions: 0, users: 0, bounceRate: 0, avgSession: 0 };
+  const ga4Kpis = data.kpis || [];
   const ga4TopPages = data.topPages || [];
-  const ga4TrafficSources = data.trafficSources || [];
+  const ga4TrafficSources = data.sources || []; // Fallback to safe value, left empty in API transformer
 
-  // Format avgSession from string/number to mm:ss
-  const formatTime = (value: any) => {
-    const seconds = parseFloat(value) || 0;
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  const iconMap: Record<string, React.ElementType> = {
+    'users': Users,
+    'activity': Globe, // Using Globe for sessions
+    'target': MousePointer2,
+    'clock': Clock
   };
 
   // Give colors to traffic sources
   const sourceColors = ['#3E1510', '#7A2B20', '#DDA77B', '#A88C87', '#EAE3D9'];
-  const formattedSources = ga4TrafficSources.map((s: GA4TrafficSource, i: number) => ({
+  const formattedSources = ga4TrafficSources.map((s: any, i: number) => ({
     name: `${s.source} / ${s.medium}`,
     sessions: s.sessions,
     color: sourceColors[i % sourceColors.length]
@@ -80,34 +82,19 @@ export function Ga4PlatformOverview() {
         <div className="space-y-6">
           {/* Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
-                <Globe className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Sessions</span>
-              </div>
-              <p className="text-xl font-bold text-[#14421E]">{ga4Kpis.sessions.toLocaleString()}</p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Users className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Total Users</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.users.toLocaleString()}</p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <MousePointer2 className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Bounce Rate</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{ga4Kpis.bounceRate}%</p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Clock className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Avg Session</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{formatTime(ga4Kpis.avgSession)}</p>
-            </div>
+            {ga4Kpis.map((kpi: any, idx: number) => {
+              const Icon = iconMap[kpi.iconName] || Globe;
+              const isFirst = idx === 0;
+              return (
+                <div key={idx} className={isFirst ? "bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4" : "bg-white border border-[#EAE3D9] rounded-xl p-4"}>
+                  <div className={`flex items-center space-x-2 mb-2 ${isFirst ? 'text-[#2E6B3B]' : 'text-[#A88C87]'}`}>
+                    <Icon className="w-4 h-4" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{kpi.title}</span>
+                  </div>
+                  <p className={`text-xl font-bold ${isFirst ? 'text-[#14421E]' : 'text-[#3E1510]'}`}>{kpi.value}</p>
+                </div>
+              );
+            })}
           </div>
 
           {/* Top Pages Table */}
@@ -124,10 +111,10 @@ export function Ga4PlatformOverview() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE3D9]">
-                  {ga4TopPages.map((page: GA4TopPage, idx: number) => (
+                  {ga4TopPages.map((page: any, idx: number) => (
                     <tr key={idx} className="hover:bg-[#F9F7F4] transition-colors cursor-pointer">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-[#5C4541] truncate max-w-sm">{page.path}</p>
+                        <p className="font-semibold text-[#5C4541] truncate max-w-sm">{page.pagePath}</p>
                       </td>
                       <td className="px-6 py-4 text-right text-[#3E1510] font-medium">{page.views.toLocaleString()}</td>
                     </tr>
@@ -203,7 +190,7 @@ export function Ga4PlatformOverview() {
               {/* Custom Legend to match aesthetic */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-[#3E1510]">{Math.round((ga4Kpis.sessions / 1000))}k</p>
+                  <p className="text-2xl font-bold text-[#3E1510]">{ga4Kpis.find((k: any) => k.title === 'Sessions')?.value || '0'}</p>
                   <p className="text-[10px] font-bold text-[#A88C87] uppercase tracking-widest">Sessions</p>
                 </div>
               </div>

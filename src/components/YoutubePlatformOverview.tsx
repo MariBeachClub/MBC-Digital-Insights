@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { fetchYouTubeData } from '../utils/api';
+import { fetchPlatformData } from '../utils/api';
 import { PlaySquare, Clock, Users, Activity, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { YouTubeVideo } from '../types';
+import { useDateRange } from '../contexts/DateContext';
 
 export function YoutubePlatformOverview() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { startDate, endDate } = useDateRange();
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
-        const result = await fetchYouTubeData();
+        const result = await fetchPlatformData('youtube', startDate, endDate);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Unknown error');
@@ -20,7 +23,7 @@ export function YoutubePlatformOverview() {
       }
     }
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
   if (isLoading) {
     return (

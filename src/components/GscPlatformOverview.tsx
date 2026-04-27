@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { fetchGSCData } from '../utils/api';
+import { fetchPlatformData } from '../utils/api';
 import { Search, MousePointerClick, Eye, Target, Sparkles, TrendingUp, ArrowUpRight, Loader2, AlertCircle } from 'lucide-react';
 import { GSCQuery } from '../types';
+import { useDateRange } from '../contexts/DateContext';
 
 export function GscPlatformOverview() {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { startDate, endDate } = useDateRange();
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
-        const result = await fetchGSCData();
+        const result = await fetchPlatformData('gsc', startDate, endDate);
         setData(result);
       } catch (err: any) {
         setError(err.message || 'Unknown error');
@@ -20,7 +23,7 @@ export function GscPlatformOverview() {
       }
     }
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
   if (isLoading) {
     return (
@@ -42,8 +45,15 @@ export function GscPlatformOverview() {
     );
   }
 
-  const gscKpis = data || { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+  const gscKpis = data.kpis || [];
   const gscQueries = data.topQueries || [];
+
+  const iconMap: Record<string, React.ElementType> = {
+    'mouse': MousePointerClick,
+    'eye': Eye,
+    'target': Target,
+    'podium': TrendingUp
+  };
 
   return (
     <div className="space-y-6">
@@ -62,34 +72,19 @@ export function GscPlatformOverview() {
         <div className="space-y-6">
           {/* Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#2E6B3B] mb-2">
-                <MousePointerClick className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Total Clicks</span>
-              </div>
-              <p className="text-xl font-bold text-[#14421E]">{(gscKpis.clicks / 1000).toFixed(1)}<span className="text-sm text-[#2E6B3B]">k</span></p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Eye className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Impressions</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{Math.round(gscKpis.impressions / 1000)}<span className="text-sm text-[#A88C87]">k</span></p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <TrendingUp className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Avg. CTR</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{(gscKpis.ctr * 100).toFixed(2)}%</p>
-            </div>
-            <div className="bg-white border border-[#EAE3D9] rounded-xl p-4">
-              <div className="flex items-center space-x-2 text-[#A88C87] mb-2">
-                <Target className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Avg. Position</span>
-              </div>
-              <p className="text-xl font-bold text-[#3E1510]">{gscKpis.position.toFixed(1)}</p>
-            </div>
+            {gscKpis.map((kpi: any, idx: number) => {
+              const Icon = iconMap[kpi.iconName] || MousePointerClick;
+              const isFirst = idx === 0;
+              return (
+                <div key={idx} className={isFirst ? "bg-[#EBF4ED] border border-[#D5E6D9] rounded-xl p-4" : "bg-white border border-[#EAE3D9] rounded-xl p-4"}>
+                  <div className={`flex items-center space-x-2 mb-2 ${isFirst ? 'text-[#2E6B3B]' : 'text-[#A88C87]'}`}>
+                    <Icon className="w-4 h-4" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{kpi.title}</span>
+                  </div>
+                  <p className={`text-xl font-bold ${isFirst ? 'text-[#14421E]' : 'text-[#3E1510]'}`}>{kpi.value}</p>
+                </div>
+              );
+            })}
           </div>
 
           {/* Top Queries Table */}
@@ -118,7 +113,7 @@ export function GscPlatformOverview() {
                       </td>
                       <td className="px-6 py-4 text-right text-[#3E1510] font-bold">{(item.clicks / 1000).toFixed(1)}k</td>
                       <td className="px-6 py-4 text-right text-[#A88C87]">{(item.impressions / 1000).toFixed(1)}k</td>
-                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{(item.ctr * 100).toFixed(2)}%</td>
+                      <td className="px-6 py-4 text-right text-[#2E6B3B] font-bold">{typeof item.ctr === 'string' ? item.ctr : (item.ctr * 100).toFixed(2)}%</td>
                       <td className="px-6 py-4 text-right text-[#5C4541]">
                         <div className="flex items-center justify-end">
                           <span className={`w-2 h-2 rounded-full mr-2 ${item.position <= 3 ? 'bg-[#2E6B3B]' : item.position <= 10 ? 'bg-[#DDA77B]' : 'bg-slate-300'}`}></span>

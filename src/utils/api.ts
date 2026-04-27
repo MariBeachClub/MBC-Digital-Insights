@@ -1,97 +1,120 @@
-import { auth, db } from '../lib/firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-
-const DEFAULT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrEv2Dqx7dddfr5hqG9mlDgygiKt6C8sSsjajEcEzwRqZLesmGqC6nAYAx1ZjpV2G7-g/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrEv2Dqx7dddfr5hqG9mlDgygiKt6C8sSsjajEcEzwRqZLesmGqC6nAYAx1ZjpV2G7-g/exec';
 
 export const getWebAppUrl = async (): Promise<string> => {
-  if (!auth.currentUser) return DEFAULT_WEB_APP_URL;
-  try {
-    const docRef = doc(db, 'user_settings', auth.currentUser.uid);
-    const snap = await getDoc(docRef);
-    if (snap.exists() && snap.data().webAppUrl) {
-      return snap.data().webAppUrl;
-    }
-  } catch (error) {
-    console.error("Error fetching web app URL:", error);
-  }
-  return DEFAULT_WEB_APP_URL;
+  return GAS_URL;
 };
 
 export const saveWebAppUrl = async (url: string) => {
-  if (!auth.currentUser) throw new Error("User must be logged in to save settings.");
-  const docRef = doc(db, 'user_settings', auth.currentUser.uid);
-  await setDoc(docRef, { 
-    webAppUrl: url, 
-    updatedAt: serverTimestamp() 
-  }, { merge: true });
+  // No-op for now to avoid breaking ConnectorsSetup
 };
 
-// Utility formatters
-const formatTime = (seconds: number) => {
-  if (isNaN(seconds)) return '00:00';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-};
-
-export async function fetchGA4Data() {
-  const url = await getWebAppUrl();
-  const res = await fetch(`${url}?platform=ga4`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return {
-    sessions: data.overview.rows[0].metricValues[0].value,
-    users: data.overview.rows[0].metricValues[1].value,
-    newUsers: data.overview.rows[0].metricValues[2].value,
-    pageViews: data.overview.rows[0].metricValues[3].value,
-    bounceRate: (parseFloat(data.overview.rows[0].metricValues[4].value) * 100).toFixed(1),
-    avgSession: data.overview.rows[0].metricValues[5].value,
-    topPages: data.topPages.rows.map((r: any) => ({ path: r.dimensionValues[0].value, views: r.metricValues[0].value })),
-    trafficSources: data.trafficSources.rows.map((r: any) => ({ source: r.dimensionValues[0].value, medium: r.dimensionValues[1].value, sessions: r.metricValues[0].value }))
-  };
+function formatSeconds(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}m ${sec}s`;
 }
 
-export async function fetchGSCData() {
-  const url = await getWebAppUrl();
-  const res = await fetch(`${url}?platform=gsc`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return {
-    clicks: data.overview.rows?.[0]?.clicks || 0,
-    impressions: data.overview.rows?.[0]?.impressions || 0,
-    ctr: data.overview.rows?.[0]?.ctr || 0,
-    position: data.overview.rows?.[0]?.position || 0,
-    topQueries: data.queries.rows || []
-  };
+function formatNumber(n: number): string {
+  if (n >= 1000000) return `${(n/1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n/1000).toFixed(1)}k`;
+  return n.toString();
 }
 
-export async function fetchYouTubeData() {
-  const url = await getWebAppUrl();
-  const res = await fetch(`${url}?platform=youtube`);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return {
-    views: data.overview.rows?.[0]?.[0] || 0,
-    watchMinutes: data.overview.rows?.[0]?.[1] || 0,
-    avgDuration: data.overview.rows?.[0]?.[2] || 0,
-    subscribersGained: data.overview.rows?.[0]?.[3] || 0,
-    topVideos: data.topVideos.rows || []
-  };
+async function callBridge(platform: string, startDate?: string, endDate?: string) {
+  let url = `${GAS_URL}?platform=${platform}`;
+  if (startDate) url += `&startDate=${startDate}`;
+  if (endDate) url += `&endDate=${endDate}`;
+  const res = await fetch(url, { method: 'GET', redirect: 'follow' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-export const fetchPlatformData = async (
-  platform: string, 
-  startDate: string, 
-  endDate: string, 
-  signal?: AbortSignal
-) => {
-  const url = await getWebAppUrl();
-  const res = await fetch(`${url}?platform=${platform}&startDate=${startDate}&endDate=${endDate}`, { signal });
-  
-  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ${platform} data`);
-  
-  const json = await res.json();
-  if (json.error) throw new Error(json.error);
-  
-  return json;
-};
+export async function fetchPlatformData(
+  platform: 'ga4' | 'gsc' | 'youtube' | 'meta' | 'tiktok' | 'email' | 'executive',
+  startDate?: string,
+  endDate?: string
+) {
+  const raw = await callBridge(platform, startDate, endDate);
+
+  if (raw && raw.error) {
+    throw new Error(raw.error);
+  }
+
+  if (platform === 'ga4') {
+    const ov = raw?.overview?.rows?.[0]?.metricValues || [];
+    const sessions = parseInt(ov[0]?.value || '0');
+    const users = parseInt(ov[1]?.value || '0');
+    const newUsers = parseInt(ov[2]?.value || '0');
+    const pageViews = parseInt(ov[3]?.value || '0');
+    const bounceRate = parseFloat(ov[4]?.value || '0');
+    const avgSession = parseFloat(ov[5]?.value || '0');
+
+    const topPages = (raw?.topPages?.rows || []).map((r: any) => ({
+      pagePath: r.dimensionValues?.[0]?.value || '',
+      views: parseInt(r.metricValues?.[0]?.value || '0'),
+      users: 0,
+      bounceRate: 'N/A'
+    }));
+
+    const sources = (raw?.trafficSources?.rows || []).slice(0, 6).map((r: any, i: number) => ({
+      name: `${r.dimensionValues?.[0]?.value || 'direct'} / ${r.dimensionValues?.[1]?.value || 'none'}`,
+      value: parseInt(r.metricValues?.[0]?.value || '0'),
+      fill: ['#7A2B20','#DDA77B','#A88C87','#2E6B3B','#5C4541','#EAE3D9'][i] || '#EAE3D9'
+    }));
+
+    return {
+      kpis: [
+        { title: 'Total Users', value: formatNumber(users), change: 'Live', trend: 'neutral', iconName: 'users' },
+        { title: 'Sessions', value: formatNumber(sessions), change: 'Live', trend: 'neutral', iconName: 'activity' },
+        { title: 'Bounce Rate', value: `${(bounceRate * 100).toFixed(1)}%`, change: 'Live', trend: 'neutral', iconName: 'target' },
+        { title: 'Avg Session', value: formatSeconds(avgSession), change: 'Live', trend: 'neutral', iconName: 'clock' }
+      ],
+      timeSeries: [],
+      sources,
+      devices: [],
+      topPages
+    };
+  }
+
+  if (platform === 'gsc') {
+    const ov = raw?.overview?.rows?.[0] || {};
+    const queries = (raw?.queries?.rows || []).map((r: any) => ({
+      query: r.keys?.[0] || r.query || '',
+      clicks: r.clicks || 0,
+      impressions: r.impressions || 0,
+      ctr: ((r.ctr || 0) * 100).toFixed(2),
+      position: parseFloat((r.position || 0).toFixed(1))
+    }));
+
+    return {
+      kpis: [
+        { id: 'impressions', title: 'Total Impressions', value: formatNumber(ov.impressions || 0), change: 'Live', trend: 'neutral', iconName: 'eye' },
+        { id: 'clicks', title: 'Total Clicks', value: formatNumber(ov.clicks || 0), change: 'Live', trend: 'neutral', iconName: 'click' },
+        { id: 'ctr', title: 'Average CTR', value: `${((ov.ctr || 0) * 100).toFixed(2)}%`, change: 'Live', trend: 'neutral', iconName: 'percent' },
+        { id: 'position', title: 'Average Position', value: (ov.position || 0).toFixed(1), change: 'Live', trend: 'neutral', iconName: 'list' }
+      ],
+      timeSeries: [],
+      rankingDistribution: [],
+      topQueries: queries,
+      brandData: []
+    };
+  }
+
+  if (platform === 'youtube') {
+    const ov = raw?.overview?.rows?.[0] || [];
+    return {
+      kpis: [
+        { title: 'Total Views', value: formatNumber(ov[0] || 0), change: 'Live', trend: 'neutral', iconName: 'eye' },
+        { title: 'Watch Time (Hours)', value: formatNumber(Math.round((ov[1] || 0) / 60)), change: 'Live', trend: 'neutral', iconName: 'clock' },
+        { title: 'Net Subscribers', value: `+${formatNumber(ov[3] || 0)}`, change: 'Live', trend: 'neutral', iconName: 'users' },
+        { title: 'Avg. View Duration', value: formatSeconds(ov[2] || 0), change: 'Live', trend: 'neutral', iconName: 'timer' }
+      ],
+      timeSeries: [],
+      formatDistribution: [],
+      trafficSources: [],
+      topVideos: []
+    };
+  }
+
+  return raw;
+}

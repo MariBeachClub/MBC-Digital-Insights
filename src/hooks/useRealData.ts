@@ -19,36 +19,30 @@ export function useGA4Data() {
       setIsLoading(true);
       setError(null);
       try {
-        const json = (await fetchPlatformData('ga4', startDate, endDate, abortController.signal)) as GASGA4Response;
+        const json = await fetchPlatformData('ga4', startDate, endDate);
         
         let overview = {
           sessions: 0, users: 0, newUsers: 0, pageViews: 0, bounceRate: 0, avgSessionDuration: 0
         };
         
-        const m = json.overview?.rows?.[0]?.metricValues;
-        if (m) {
-          overview = {
-            sessions: parseInt(m[0]?.value ?? '0') || 0,
-            users: parseInt(m[1]?.value ?? '0') || 0,
-            newUsers: parseInt(m[2]?.value ?? '0') || 0,
-            pageViews: parseInt(m[3]?.value ?? '0') || 0,
-            bounceRate: parseFloat(m[4]?.value ?? '0') || 0,
-            avgSessionDuration: parseFloat(m[5]?.value ?? '0') || 0
-          };
+        // Grab numbers from the new formatted format
+        if (json && json.kpis) {
+           const getVal = (idx: number) => {
+              if(!json.kpis[idx]) return 0;
+              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              return parseFloat(v) || 0;
+           };
+           overview = {
+             users: getVal(0),
+             sessions: getVal(1),
+             bounceRate: getVal(2),
+             avgSessionDuration: 0,
+             pageViews: 0,
+             newUsers: 0
+           };
         }
 
-        const topPages = (json.topPages?.rows ?? []).map((r) => ({
-          path: r.dimensionValues?.[0]?.value ?? 'Unknown',
-          views: parseInt(r.metricValues?.[0]?.value ?? '0') || 0
-        }));
-
-        const trafficSources = (json.trafficSources?.rows ?? []).map((r) => ({
-          source: r.dimensionValues?.[0]?.value ?? 'Unknown',
-          medium: r.dimensionValues?.[1]?.value ?? 'Unknown',
-          sessions: parseInt(r.metricValues?.[0]?.value ?? '0') || 0
-        }));
-
-        setData({ overview, topPages, trafficSources });
+        setData({ overview, topPages: json?.topPages || [], trafficSources: json?.sources || [] });
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -79,29 +73,28 @@ export function useGSCData() {
       setIsLoading(true);
       setError(null);
       try {
-        const json = (await fetchPlatformData('gsc', startDate, endDate, abortController.signal)) as GASGSCResponse;
+        const json = await fetchPlatformData('gsc', startDate, endDate);
         
         let overview = { clicks: 0, impressions: 0, ctr: 0, position: 0 };
-        const row = json.overview?.rows?.[0];
         
-        if (row) {
-            overview = {
-                clicks: row.clicks ?? 0,
-                impressions: row.impressions ?? 0,
-                ctr: row.ctr ?? 0,
-                position: row.position ?? 0
-            };
+        if (json && json.kpis) {
+           const getVal = (idx: number) => {
+              if(!json.kpis[idx]) return 0;
+              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              let parsed = parseFloat(v);
+              if (json.kpis[idx].value.includes('k')) parsed *= 1000;
+              if (json.kpis[idx].value.includes('M')) parsed *= 1000000;
+              return parsed || 0;
+           };
+           overview = {
+               impressions: getVal(0),
+               clicks: getVal(1),
+               ctr: getVal(2),
+               position: getVal(3)
+           };
         }
 
-        const topQueries = (json.queries?.rows ?? []).map((r) => ({
-            query: r.keys?.[0] ?? 'Unknown',
-            clicks: r.clicks ?? 0,
-            impressions: r.impressions ?? 0,
-            ctr: r.ctr ?? 0,
-            position: r.position ?? 0
-        }));
-
-        setData({ overview, topQueries });
+        setData({ overview, topQueries: json?.topQueries || [] });
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -132,28 +125,29 @@ export function useYouTubeData() {
       setIsLoading(true);
       setError(null);
       try {
-        const json = (await fetchPlatformData('youtube', startDate, endDate, abortController.signal)) as GASYouTubeResponse;
+        const json = await fetchPlatformData('youtube', startDate, endDate);
         
         let overview = { views: 0, watchMinutes: 0, avgDuration: 0, subscribersGained: 0, subscribersLost: 0 };
-        const r = json.overview?.rows?.[0];
-        if (r) {
-          overview = {
-            views: r[0] ?? 0,
-            watchMinutes: r[4] ?? 0,
-            avgDuration: r[5] ?? 0,
-            subscribersGained: 0,
-            subscribersLost: 0
-          };
+        
+        if (json && json.kpis) {
+           const getVal = (idx: number) => {
+              if(!json.kpis[idx]) return 0;
+              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              let parsed = parseFloat(v);
+              if (json.kpis[idx].value.includes('k')) parsed *= 1000;
+              if (json.kpis[idx].value.includes('M')) parsed *= 1000000;
+              return parsed || 0;
+           };
+           overview = {
+               views: getVal(0),
+               watchMinutes: getVal(1),
+               subscribersGained: getVal(2),
+               avgDuration: 0,
+               subscribersLost: 0
+           };
         }
 
-        const topVideos = (json.topVideos?.rows ?? []).map((v) => ({
-          videoId: String(v[0] ?? ''),
-          views: Number(v[1] ?? 0),
-          likes: Number(v[2] ?? 0),
-          shares: Number(v[3] ?? 0)
-        }));
-
-        setData({ overview, topVideos });
+        setData({ overview, topVideos: json?.topVideos || [] });
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';

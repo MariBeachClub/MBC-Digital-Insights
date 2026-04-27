@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Home, BarChart2, PieChart, MessageSquare, FileText, Settings, Navigation, ChevronLeft, ChevronRight, Globe, X, Video, Megaphone, Search, PlaySquare } from 'lucide-react';
-import { auth } from '../lib/firebase';
+import { Home, BarChart2, PieChart, MessageSquare, FileText, Settings, Navigation, ChevronLeft, ChevronRight, Globe, X, Video, Megaphone, Search, PlaySquare, Plug, User } from 'lucide-react';
+import { auth, db } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface SidebarProps {
-  activeTab?: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors';
-  setActiveTab?: (tab: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors') => void;
+  activeTab?: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors' | 'settings';
+  setActiveTab?: (tab: 'executive' | 'meta' | 'ga4' | 'tiktok' | 'gads' | 'gsc' | 'youtube' | 'draft' | 'connectors' | 'settings') => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
 export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [companyName, setCompanyName] = useState('MARI');
+  const [subName, setSubName] = useState('Beach Club Bali');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Auto-collapse sidebar on tablet screens
   useEffect(() => {
@@ -28,6 +32,30 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    async function loadSettings() {
+      if (!auth.currentUser) return;
+      try {
+        const docRef = doc(db, 'user_settings', auth.currentUser.uid);
+        const snap = await getDoc(docRef);
+        if (snap.exists() && snap.data()) {
+           const data = snap.data();
+           if (data.logo) setLogoUrl(data.logo);
+           if (data.profile?.company) {
+             const words = data.profile.company.split(' ');
+             setCompanyName(words[0].toUpperCase());
+             if (words.length > 1) {
+               setSubName(words.slice(1).join(' '));
+             } else {
+               setSubName('Company');
+             }
+           }
+        }
+      } catch (err) {}
+    }
+    loadSettings();
+  }, [auth.currentUser]);
 
   const handleTabClick = (tab: any) => {
     if (setActiveTab) setActiveTab(tab);
@@ -77,28 +105,25 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
         )}
 
         {/* Branding */}
-        <div className={`p-6 border-b border-[#522019] flex items-center ${isCollapsed ? 'justify-center p-4' : 'justify-center'}`}>
+        <div className={`p-6 border-b border-[#522019] flex flex-col items-center justify-center min-h-[100px] ${isCollapsed ? 'p-4' : ''}`}>
           {!isCollapsed ? (
             <div className="flex flex-col items-center w-full">
-               <img 
-                 src="/mari-logo-white.png" 
-                 alt="Mari Beach Club" 
-                 className="h-10 w-auto object-contain mb-2"
-                 onError={(e) => {
-                   e.currentTarget.style.display = 'none';
-                   if (e.currentTarget.nextElementSibling) {
-                     (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'block';
-                   }
-                 }}
-               />
-               <div className="hidden text-center">
-                  <h1 className="text-white font-serif font-bold text-3xl leading-tight tracking-wide">MARI</h1>
-                  <p className="text-[10px] text-[#DDA77B] uppercase tracking-widest leading-none mt-1">Beach Club Bali</p>
-               </div>
+               {logoUrl ? (
+                 <img src={logoUrl} alt={companyName} className="h-10 w-auto object-contain mb-2" />
+               ) : (
+                 <div className="text-center">
+                    <h1 className="text-white font-serif font-bold text-3xl leading-tight tracking-wide">{companyName}</h1>
+                    <p className="text-[10px] text-[#DDA77B] uppercase tracking-widest leading-none mt-1">{subName}</p>
+                 </div>
+               )}
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-[#E6DFD6] flex items-center justify-center shrink-0 shadow-sm mx-auto">
-              <h1 className="text-[#3E1510] font-serif font-bold text-xl leading-tight tracking-wide">M</h1>
+            <div className="w-10 h-10 rounded-full bg-[#E6DFD6] flex items-center justify-center shrink-0 shadow-sm mx-auto overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt={companyName} className="h-full w-full object-cover" />
+              ) : (
+                <h1 className="text-[#3E1510] font-serif font-bold text-xl leading-tight tracking-wide">{companyName.charAt(0)}</h1>
+              )}
             </div>
           )}
         </div>
@@ -165,9 +190,14 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
 
         {/* User / Settings / Credits */}
         <div className={`p-4 border-t border-[#522019] space-y-4 overflow-hidden shrink-0 ${isCollapsed ? 'text-center' : ''}`}>
+          <button onClick={() => handleTabClick('settings')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2 rounded-lg transition-colors text-sm ${isActive('settings') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87] hover:text-[#E6DFD6]'}`} title="Settings & Profile">
+            <User className={`w-5 h-5 shrink-0 transition-colors ${isActive('settings') ? 'text-white' : ''} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`whitespace-nowrap transition-colors ${isActive('settings') ? 'text-white' : ''}`}>Settings & Profile</span>}
+          </button>
+          
           <button onClick={() => handleTabClick('connectors')} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2 rounded-lg transition-colors text-sm ${isActive('connectors') ? 'bg-[#522019] text-white' : 'hover:bg-[#522019]/50 text-[#A88C87] hover:text-[#E6DFD6]'}`} title="Connectors Setup">
-            <Settings className={`w-5 h-5 shrink-0 transition-colors ${isActive('connectors') ? 'text-white' : ''} ${!isCollapsed && 'mr-3'}`} />
-            {!isCollapsed && <span className={`whitespace-nowrap transition-colors ${isActive('connectors') ? 'text-white' : ''}`}>Connectors Setup</span>}
+            <Plug className={`w-5 h-5 shrink-0 transition-colors ${isActive('connectors') ? 'text-white' : ''} ${!isCollapsed && 'mr-3'}`} />
+            {!isCollapsed && <span className={`whitespace-nowrap transition-colors ${isActive('connectors') ? 'text-white' : ''}`}>Connectors</span>}
           </button>
           
           <button onClick={() => auth.signOut()} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2 rounded-lg transition-colors text-sm hover:bg-[#522019]/50 text-[#A43927] hover:text-[#DDA77B]`} title="Sign Out">

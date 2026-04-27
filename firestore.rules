@@ -10,8 +10,10 @@ service cloud.firestore {
     function incoming() { return request.resource.data; }
 
     function isValidUserSettings(data) {
-      return data.keys().hasOnly(['webAppUrl', 'updatedAt']) || data.keys().hasOnly(['webAppUrl', 'updatedAt', 'userId']) &&
-             data.webAppUrl is string && data.webAppUrl.size() <= 1000;
+      return data.keys().hasAny(['webAppUrl', 'updatedAt', 'userId', 'profile', 'logo']) &&
+             (!('webAppUrl' in data) || (data.webAppUrl is string && data.webAppUrl.size() <= 1000)) &&
+             (!('logo' in data) || (data.logo is string && data.logo.size() <= 2000000)) &&
+             (!('profile' in data) || data.profile is map);
     }
 
     match /user_settings/{userId} {
