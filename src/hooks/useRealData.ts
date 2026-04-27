@@ -28,8 +28,9 @@ export function useGA4Data() {
         // Grab numbers from the new formatted format
         if (json && json.kpis) {
            const getVal = (idx: number) => {
-              if(!json.kpis[idx]) return 0;
-              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              const kpiNode = json?.kpis?.[idx];
+              if (!kpiNode || typeof kpiNode.value !== 'string') return 0;
+              const v = kpiNode.value.replace(/[^0-9.]/g, '');
               return parseFloat(v) || 0;
            };
            overview = {
@@ -46,6 +47,7 @@ export function useGA4Data() {
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('GA4 fetch error', { platform: 'ga4', startDate, endDate, error: errorMessage });
         setError(errorMessage);
         setData(null);
       } finally {
@@ -79,11 +81,12 @@ export function useGSCData() {
         
         if (json && json.kpis) {
            const getVal = (idx: number) => {
-              if(!json.kpis[idx]) return 0;
-              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              const kpiNode = json?.kpis?.[idx];
+              if (!kpiNode || typeof kpiNode.value !== 'string') return 0;
+              const v = kpiNode.value.replace(/[^0-9.]/g, '');
               let parsed = parseFloat(v);
-              if (json.kpis[idx].value.includes('k')) parsed *= 1000;
-              if (json.kpis[idx].value.includes('M')) parsed *= 1000000;
+              if (kpiNode.value.includes('k')) parsed *= 1000;
+              if (kpiNode.value.includes('M')) parsed *= 1000000;
               return parsed || 0;
            };
            overview = {
@@ -98,6 +101,7 @@ export function useGSCData() {
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('GSC fetch error', { platform: 'gsc', startDate, endDate, error: errorMessage });
         setError(errorMessage);
         setData(null);
       } finally {
@@ -131,11 +135,12 @@ export function useYouTubeData() {
         
         if (json && json.kpis) {
            const getVal = (idx: number) => {
-              if(!json.kpis[idx]) return 0;
-              const v = json.kpis[idx].value.replace(/[^0-9.]/g, '');
+              const kpiNode = json?.kpis?.[idx];
+              if (!kpiNode || typeof kpiNode.value !== 'string') return 0;
+              const v = kpiNode.value.replace(/[^0-9.]/g, '');
               let parsed = parseFloat(v);
-              if (json.kpis[idx].value.includes('k')) parsed *= 1000;
-              if (json.kpis[idx].value.includes('M')) parsed *= 1000000;
+              if (kpiNode.value.includes('k')) parsed *= 1000;
+              if (kpiNode.value.includes('M')) parsed *= 1000000;
               return parsed || 0;
            };
            overview = {
@@ -151,6 +156,7 @@ export function useYouTubeData() {
       } catch (err: unknown) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('YouTube fetch error', { platform: 'youtube', startDate, endDate, error: errorMessage });
         setError(errorMessage);
         setData(null);
       } finally {

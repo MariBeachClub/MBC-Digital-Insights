@@ -92,10 +92,10 @@ export function DraftReportView() {
           
           <button 
              onClick={handleCopy}
-             className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all"
+             className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all w-48"
           >
              {isCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-             Copy to Clipboard
+             {isCopied ? 'Copied!' : 'Copy to Clipboard'}
           </button>
 
           <button 
@@ -113,7 +113,7 @@ export function DraftReportView() {
       <div className="flex-1 flex overflow-y-auto px-4 py-8 md:py-12 justify-center custom-scrollbar flex-col items-center">
           
         {(ga4Error || (youtubeError && youtubeError !== 'YouTube account not linked')) && (
-          <div className="w-full max-w-[850px] mb-6 flex items-start space-x-3 bg-[#FFF9F9] border border-[#FEE2E2] text-[#A43927] p-4 rounded-lg shadow-sm">
+          <div role="alert" aria-live="assertive" className="w-full max-w-[850px] mb-6 flex items-start space-x-3 bg-[#FFF9F9] border border-[#FEE2E2] text-[#A43927] p-4 rounded-lg shadow-sm">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
             <div>
               <h3 className="text-sm font-bold text-[#A43927]">Warning: Unable to fetch live data</h3>
@@ -152,6 +152,7 @@ export function DraftReportView() {
             ) : (
                editMode ? (
                  <textarea 
+                   aria-label="Edit draft report content"
                    value={draftContent}
                    onChange={(e) => setDraftContent(e.target.value)}
                    className="w-full h-full min-h-[600px] resize-none outline-none text-[1.05rem] leading-[2] font-sans text-[#5C4541] custom-scrollbar focus:ring-1 focus:ring-[#DDA77B]/30 rounded p-2"

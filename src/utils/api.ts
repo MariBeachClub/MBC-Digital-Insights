@@ -9,12 +9,14 @@ export const saveWebAppUrl = async (url: string) => {
 };
 
 function formatSeconds(s: number): string {
+  if (isNaN(s)) return '0m 0s';
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
   return `${m}m ${sec}s`;
 }
 
 function formatNumber(n: number): string {
+  if (isNaN(n)) return '0';
   if (n >= 1000000) return `${(n/1000000).toFixed(1)}M`;
   if (n >= 1000) return `${(n/1000).toFixed(1)}k`;
   return n.toString();
@@ -24,9 +26,28 @@ async function callBridge(platform: string, startDate?: string, endDate?: string
   let url = `${GAS_URL}?platform=${platform}`;
   if (startDate) url += `&startDate=${startDate}`;
   if (endDate) url += `&endDate=${endDate}`;
-  const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const res = await fetch(url, { 
+      method: 'GET', 
+      redirect: 'follow',
+      signal: controller.signal 
+    });
+    
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+        throw new TypeError(`Expected JSON, received ${contentType}`);
+    }
+    
+    return await res.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function fetchPlatformData(
@@ -41,7 +62,11 @@ export async function fetchPlatformData(
   }
 
   if (platform === 'ga4') {
-    const ov = raw?.overview?.rows?.[0]?.metricValues || [];
+    if (!raw?.overview?.rows?.[0]?.metricValues) {
+      console.warn("Malformed GA4 payload detected: Missing overview.rows[0].metricValues");
+      return { kpis: [], timeSeries: [], sources: [], devices: [], topPages: [] };
+    }
+    const ov = raw.overview.rows[0].metricValues;
     const sessions = parseInt(ov[0]?.value || '0');
     const users = parseInt(ov[1]?.value || '0');
     const newUsers = parseInt(ov[2]?.value || '0');
@@ -77,7 +102,11 @@ export async function fetchPlatformData(
   }
 
   if (platform === 'gsc') {
-    const ov = raw?.overview?.rows?.[0] || {};
+    if (!raw?.overview?.rows?.[0]) {
+      console.warn("Malformed GSC payload detected: Missing overview.rows[0]");
+      return { kpis: [], timeSeries: [], rankingDistribution: [], topQueries: [], brandData: [] };
+    }
+    const ov = raw.overview.rows[0];
     const queries = (raw?.queries?.rows || []).map((r: any) => ({
       query: r.keys?.[0] || r.query || '',
       clicks: r.clicks || 0,
@@ -101,7 +130,11 @@ export async function fetchPlatformData(
   }
 
   if (platform === 'youtube') {
-    const ov = raw?.overview?.rows?.[0] || [];
+    if (!raw?.overview?.rows?.[0]) {
+      console.warn("Malformed YouTube payload detected: Missing overview.rows[0]");
+      return { kpis: [], timeSeries: [], formatDistribution: [], trafficSources: [], topVideos: [] };
+    }
+    const ov = raw.overview.rows[0];
     return {
       kpis: [
         { title: 'Total Views', value: formatNumber(ov[0] || 0), change: 'Live', trend: 'neutral', iconName: 'eye' },

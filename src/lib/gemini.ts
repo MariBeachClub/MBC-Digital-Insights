@@ -17,6 +17,9 @@ export async function generateMonthlyDraft(mockData: any, proxyUrl: string): Pro
     youtube: `YouTube channel generated ${mockData.youtube?.views || 0} views and ${mockData.youtube?.watchMinutes || 0} watch minutes.`
   };
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
   try {
     const response = await fetch(proxyUrl, {
       method: "POST",
@@ -24,10 +27,16 @@ export async function generateMonthlyDraft(mockData: any, proxyUrl: string): Pro
         "Content-Type": "text/plain;charset=utf-8", 
       },
       body: JSON.stringify(parsedContext),
+      signal: controller.signal
     });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+        throw new TypeError(`Expected JSON, received ${contentType}`);
     }
 
     const data = await response.json();
@@ -39,7 +48,13 @@ export async function generateMonthlyDraft(mockData: any, proxyUrl: string): Pro
     return data.text; 
 
   } catch (error) {
-    console.error("Error generating report:", error);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error("Timeout generating report", { proxyUrl, contextKeys: Object.keys(parsedContext) });
+      throw new Error("Request to generation endpoint timed out.");
+    }
+    console.error("Error generating report", { proxyUrl, contextKeys: Object.keys(parsedContext), error });
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

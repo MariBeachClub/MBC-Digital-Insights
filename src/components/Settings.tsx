@@ -8,6 +8,7 @@ export function Settings() {
   const [logo, setLogo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{message: string, type: 'error'|'success'} | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -40,7 +41,8 @@ export function Settings() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 1024 * 1024) { // 1MB limit for base64
-        alert('Image must be less than 1MB');
+        setToast({ message: 'Image must be less than 1MB', type: 'error' });
+        setTimeout(() => setToast(null), 3000);
         return;
       }
       const reader = new FileReader();
@@ -57,23 +59,36 @@ export function Settings() {
     try {
       const docRef = doc(db, 'user_settings', auth.currentUser.uid);
       await setDoc(docRef, { profile, logo }, { merge: true });
-      alert('Settings saved successfully!');
-      // Force reload to apply logo globally
-      window.location.reload();
+      setToast({ message: 'Settings saved successfully!', type: 'success' });
+      // Force reload to apply logo globally after a short delay
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       console.error(err);
-      alert('Failed to save settings.');
+      setToast({ message: 'Failed to save settings.', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#7A2B20]" /></div>;
+    return (
+      <div role="status" aria-live="polite" className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-[#7A2B20]" />
+        <span className="sr-only">Loading settings...</span>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12 pt-6">
+    <div className="max-w-4xl mx-auto space-y-8 pb-12 pt-6 relative">
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`absolute top-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white font-bold text-sm z-50 ${toast.type === 'success' ? 'bg-[#2E6B3B]' : 'bg-[#A43927]'}`}>
+          {toast.message}
+        </div>
+      )}
+
       <div>
         <h2 className="text-3xl font-serif font-bold text-[#3E1510]">Settings</h2>
         <p className="text-[#A88C87] mt-2 font-medium">Manage your profile, team access, and whitelabeling.</p>
@@ -85,8 +100,9 @@ export function Settings() {
         </div>
         <div className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-bold text-[#5C4541] mb-2">Company Name</label>
+            <label htmlFor="companyName" className="block text-sm font-bold text-[#5C4541] mb-2">Company Name</label>
             <input 
+              id="companyName"
               type="text" 
               value={profile.company}
               onChange={e => setProfile({...profile, company: e.target.value})}
@@ -121,8 +137,9 @@ export function Settings() {
         </div>
         <div className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-bold text-[#5C4541] mb-2">Your Name</label>
+            <label htmlFor="yourName" className="block text-sm font-bold text-[#5C4541] mb-2">Your Name</label>
             <input 
+              id="yourName"
               type="text" 
               value={profile.name}
               onChange={e => setProfile({...profile, name: e.target.value})}
@@ -130,8 +147,8 @@ export function Settings() {
             />
           </div>
           <div>
-             <label className="block text-sm font-bold text-[#5C4541] mb-2">Email Address</label>
-             <input type="text" value={auth.currentUser?.email || ''} disabled className="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-lg px-4 py-3 cursor-not-allowed" />
+             <label htmlFor="emailAddress" className="block text-sm font-bold text-[#5C4541] mb-2">Email Address</label>
+             <input id="emailAddress" type="text" value={auth.currentUser?.email || ''} disabled className="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-lg px-4 py-3 cursor-not-allowed" />
           </div>
         </div>
       </div>

@@ -57,6 +57,16 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
     loadSettings();
   }, [auth.currentUser]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileOpen && onCloseMobile) {
+        onCloseMobile();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, onCloseMobile]);
+
   const handleTabClick = (tab: any) => {
     if (setActiveTab) setActiveTab(tab);
     if (onCloseMobile) onCloseMobile();
@@ -88,6 +98,7 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
         
         {/* Collapse Toggle Button (Desktop & Tablet only) */}
         <button 
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden md:flex absolute -right-3 top-8 bg-white text-[#3E1510] rounded-full p-1 border border-[#EAE3D9] shadow-md z-[60] hover:bg-[#F9F7F4] transition-colors items-center justify-center"
         >
@@ -97,6 +108,7 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
         {/* Mobile Close Button */}
         {isMobileOpen && (
           <button 
+            aria-label="Close menu"
             onClick={onCloseMobile}
             className="md:hidden absolute right-4 top-6 text-[#E6DFD6] hover:text-white p-1"
           >
@@ -129,7 +141,7 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-2 overflow-x-hidden overflow-y-auto custom-scrollbar">
+        <nav aria-label="Main Navigation" className="flex-1 px-3 py-6 space-y-2 overflow-x-hidden overflow-y-auto custom-scrollbar">
           <p className={`text-[10px] font-semibold text-[#A88C87] uppercase tracking-widest mb-3 ${isCollapsed ? 'text-center truncate px-0' : 'px-3'}`}>
             {isCollapsed ? 'Dash' : 'Dashboards'}
           </p>
