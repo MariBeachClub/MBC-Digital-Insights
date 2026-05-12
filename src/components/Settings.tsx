@@ -81,7 +81,7 @@ export function Settings() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12 pt-6 relative">
+    <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="max-w-4xl mx-auto space-y-8 pb-12 pt-6 relative">
       {/* Toast Notification */}
       {toast && (
         <div className={`absolute top-4 right-4 px-4 py-3 rounded-lg shadow-lg text-white font-bold text-sm z-50 ${toast.type === 'success' ? 'bg-[#2E6B3B]' : 'bg-[#A43927]'}`}>
@@ -120,8 +120,8 @@ export function Settings() {
                 )}
               </div>
               <div>
-                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" id="logo-upload" />
-                <label htmlFor="logo-upload" className="cursor-pointer px-4 py-2 bg-white border border-[#EAE3D9] text-[#3E1510] font-bold rounded-lg shadow-sm hover:bg-[#F9F7F4] transition-colors inline-block">
+                <input type="file" accept="image/*" onChange={handleLogoUpload} className="sr-only peer" id="logo-upload" />
+                <label htmlFor="logo-upload" className="cursor-pointer px-4 py-2 bg-white border border-[#EAE3D9] text-[#3E1510] font-bold rounded-lg shadow-sm hover:bg-[#F9F7F4] peer-focus:ring-2 peer-focus:ring-[#DDA77B] peer-focus:ring-offset-2 peer-focus:outline-none transition-colors inline-block">
                   Upload Logo
                 </label>
                 <p className="text-xs text-[#A88C87] mt-2">Max 1MB, recommend square ratio.</p>
@@ -175,7 +175,7 @@ export function Settings() {
 
       <div className="flex justify-end pt-4">
         <button 
-          onClick={handleSave}
+          type="submit"
           disabled={saving}
           className="flex items-center px-6 py-3 bg-[#3E1510] hover:bg-[#522019] text-white rounded-lg font-bold transition-colors disabled:opacity-50 shadow"
         >
@@ -184,6 +184,6 @@ export function Settings() {
         </button>
       </div>
 
-    </div>
+    </form>
   );
 }

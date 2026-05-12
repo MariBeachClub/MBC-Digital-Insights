@@ -73,39 +73,47 @@ export function DraftReportView() {
         </div>
         
         <div className="flex items-center space-x-3 w-full sm:w-auto flex-wrap gap-y-2 sm:gap-y-0 justify-end sm:justify-start">
-          <button 
-             onClick={handleGenerateDraft}
-             disabled={isGenerating || isDataLoading}
-             className="flex items-center justify-center px-4 py-2 border border-transparent bg-[#3E1510] text-[#EAE3D9] hover:bg-[#522019] rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-             {isGenerating || isDataLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2 text-[#DDA77B]" />}
-             {isDataLoading ? 'Loading Data...' : 'Generate Draft'}
-          </button>
+          {draftContent && (
+            <button 
+               onClick={handleGenerateDraft}
+               disabled={isGenerating || isDataLoading}
+               className="flex items-center justify-center px-4 py-2 border border-[#EAE3D9] bg-white text-[#5C4541] hover:bg-[#FDF8F3] hover:text-[#7A2B20] hover:border-[#DDA77B] rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+               {isGenerating || isDataLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+               Regenerate
+            </button>
+          )}
 
-          <button 
-             onClick={() => setEditMode(!editMode)}
-             className={`flex items-center justify-center px-4 py-2 border rounded-lg text-sm font-bold transition-all ${editMode ? 'bg-[#FDF8F3] border-[#DDA77B] text-[#7A2B20]' : 'bg-white border-[#EAE3D9] text-[#A88C87] hover:text-[#5C4541] hover:border-[#DDA77B]'}`}
-          >
-             <Edit3 className="w-4 h-4 mr-2" />
-             {editMode ? 'Editing' : 'Edit Mode'}
-          </button>
-          
-          <button 
-             onClick={handleCopy}
-             className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all w-48"
-          >
-             {isCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-             {isCopied ? 'Copied!' : 'Copy to Clipboard'}
-          </button>
+          {draftContent && (
+            <>
+              <div className="hidden sm:block w-px h-8 bg-[#EAE3D9] mx-1"></div>
 
-          <button 
-            onClick={handleExportPdf}
-            disabled={isExporting}
-            className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all disabled:opacity-50"
-          >
-            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Export to PDF
-          </button>
+              <button 
+                 onClick={() => setEditMode(!editMode)}
+                 className={`flex items-center justify-center px-4 py-2 border rounded-lg text-sm font-bold transition-all ${editMode ? 'bg-[#FDF8F3] border-[#DDA77B] text-[#7A2B20]' : 'bg-white border-[#EAE3D9] text-[#A88C87] hover:text-[#5C4541] hover:border-[#DDA77B]'}`}
+              >
+                 <Edit3 className="w-4 h-4 mr-2" />
+                 {editMode ? 'Editing' : 'Edit Mode'}
+              </button>
+              
+              <button 
+                 onClick={handleCopy}
+                 className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all w-48"
+              >
+                 {isCopied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                 {isCopied ? 'Copied!' : 'Copy to Clipboard'}
+              </button>
+
+              <button 
+                onClick={handleExportPdf}
+                disabled={isExporting}
+                className="flex items-center justify-center px-4 py-2 bg-white border border-[#DDA77B] text-[#7A2B20] hover:bg-[#FDF8F3] rounded-lg text-sm font-bold transition-all disabled:opacity-50"
+              >
+                {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                Export to PDF
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -155,13 +163,28 @@ export function DraftReportView() {
                    aria-label="Edit draft report content"
                    value={draftContent}
                    onChange={(e) => setDraftContent(e.target.value)}
-                   className="w-full h-full min-h-[600px] resize-none outline-none text-[1.05rem] leading-[2] font-sans text-[#5C4541] custom-scrollbar focus:ring-1 focus:ring-[#DDA77B]/30 rounded p-2"
+                   className="w-full h-full min-h-[600px] resize-none outline-none text-[1.05rem] leading-[2] font-sans text-[#5C4541] custom-scrollbar focus:ring-2 focus:ring-[#DDA77B] focus:border-transparent rounded p-2"
                    placeholder="Start typing..."
                  />
                ) : (
                  <div className="markdown-body">
-                   {/* SCRUBBED: Changed "No narrative generated." to "No report generated." */}
-                   <Markdown>{draftContent || 'No report generated.'}</Markdown>
+                   {draftContent ? (
+                     <Markdown>{draftContent}</Markdown>
+                   ) : (
+                     <div className="text-center py-20">
+                       <Bot className="w-12 h-12 text-[#EAE3D9] mx-auto mb-4" />
+                       <h3 className="text-xl font-bold text-[#3E1510] mb-2">No Report Generated</h3>
+                       <p className="text-[#A88C87] mb-8">Click below to synthesize your monthly data into an executive brief.</p>
+                       <button 
+                         onClick={handleGenerateDraft}
+                         disabled={isGenerating || isDataLoading}
+                         className="inline-flex items-center justify-center px-6 py-3 border border-transparent bg-[#3E1510] text-[#EAE3D9] hover:bg-[#522019] rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
+                       >
+                         {isGenerating || isDataLoading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Sparkles className="w-5 h-5 mr-2 text-[#DDA77B]" />}
+                         {isDataLoading ? 'Loading Data...' : 'Generate Executive Draft'}
+                       </button>
+                     </div>
+                   )}
                  </div>
                )
             )}

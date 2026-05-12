@@ -85,7 +85,8 @@ function App() {
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Total Website Sessions</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">
-                          {ga4Overview ? ga4Overview.sessions.toLocaleString() : '-'}
+                           {ga4Overview ? (ga4Overview.sessions >= 1000 ? (ga4Overview.sessions / 1000).toFixed(1) : ga4Overview.sessions.toLocaleString()) : '-'}
+                           {ga4Overview && ga4Overview.sessions >= 1000 && <span className="text-xl text-[#A88C87] font-medium">k</span>}
                         </h3>
                         {ga4Overview && (
                            <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">LIVE</div>
@@ -97,7 +98,7 @@ function App() {
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">Search Impressions</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">
-                           {gscOverview ? (gscOverview.impressions >= 1000 ? (gscOverview.impressions / 1000).toFixed(1) : gscOverview.impressions) : '-'}
+                           {gscOverview ? (gscOverview.impressions >= 1000 ? (gscOverview.impressions / 1000).toFixed(1) : gscOverview.impressions.toLocaleString()) : '-'}
                            {gscOverview && gscOverview.impressions >= 1000 && <span className="text-xl text-[#A88C87] font-medium">k</span>}
                         </h3>
                         {gscOverview && (
@@ -110,7 +111,8 @@ function App() {
                       <p className="text-[11px] font-bold text-[#A88C87] uppercase tracking-wider mb-2">YouTube Views</p>
                       <div className="flex items-end justify-between">
                         <h3 className="text-3xl font-bold tracking-tight text-[#3E1510]">
-                           {youtubeOverview ? youtubeOverview.views.toLocaleString() : '-'}
+                           {youtubeOverview ? (youtubeOverview.views >= 1000 ? (youtubeOverview.views / 1000).toFixed(1) : youtubeOverview.views.toLocaleString()) : '-'}
+                           {youtubeOverview && youtubeOverview.views >= 1000 && <span className="text-xl text-[#A88C87] font-medium">k</span>}
                         </h3>
                         {youtubeOverview && (
                            <div className="px-2.5 py-1 bg-[#EBF4ED] text-[#2E6B3B] text-[11px] font-bold rounded uppercase tracking-wider border border-[#D5E6D9]">LIVE</div>

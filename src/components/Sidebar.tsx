@@ -121,7 +121,9 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
           {!isCollapsed ? (
             <div className="flex flex-col items-center w-full">
                {logoUrl ? (
-                 <img src={logoUrl} alt={companyName} className="h-10 w-auto object-contain mb-2" />
+                 <div className="flex items-center justify-center mb-2 h-10 w-full overflow-hidden">
+                   <img src={logoUrl} alt={companyName} width={160} height={40} className="max-h-10 w-auto object-contain" style={{ aspectRatio: '4/1' }} />
+                 </div>
                ) : (
                  <div className="text-center">
                     <h1 className="text-white font-serif font-bold text-3xl leading-tight tracking-wide">{companyName}</h1>
@@ -182,7 +184,7 @@ export function Sidebar({ activeTab, setActiveTab, isMobileOpen, onCloseMobile }
             {!isCollapsed && <span className={`font-medium text-sm whitespace-nowrap transition-colors ${isActive('youtube') ? 'text-white' : 'text-[#E6DFD6]'}`}>YouTube</span>}
           </button>
 
-          <button disabled className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} text-left rounded-lg transition-colors flex-shrink-0 opacity-50 cursor-not-allowed`} title="Brand Mentions (Coming Soon)">
+          <button aria-disabled="true" onClick={(e) => e.preventDefault()} className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'px-3 py-2.5'} text-left rounded-lg transition-colors flex-shrink-0 opacity-50 cursor-not-allowed`} title="Brand Mentions (Coming Soon)">
             <MessageSquare className={`w-5 h-5 shrink-0 text-[#A88C87] ${!isCollapsed && 'mr-3'}`} />
             {!isCollapsed && <span className="font-medium text-sm text-[#E6DFD6] whitespace-nowrap">Brand Mentions</span>}
           </button>

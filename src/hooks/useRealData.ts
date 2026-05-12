@@ -31,7 +31,10 @@ export function useGA4Data() {
               const kpiNode = json?.kpis?.[idx];
               if (!kpiNode || typeof kpiNode.value !== 'string') return 0;
               const v = kpiNode.value.replace(/[^0-9.]/g, '');
-              return parseFloat(v) || 0;
+              let parsed = parseFloat(v);
+              if (kpiNode.value.includes('k')) parsed *= 1000;
+              if (kpiNode.value.includes('M')) parsed *= 1000000;
+              return parsed || 0;
            };
            overview = {
              users: getVal(0),
